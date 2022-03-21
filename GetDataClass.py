@@ -4,11 +4,12 @@ import xlsxwriter as xw
 import xlrd
 import urllib.request
 import os
+import shutil
 
 url = "http://121.30.189.198:6003/smart_community_information/search/emergency/1/10"
 header = {"content-type": "application/x-www-form-urlencoded"}
 body = {"userAcceptance": 0, "userId": "3", "emergencyStatus": 2}
-dir = r'C:\Users\Administrator\Nox_share\ImageShare\res\mipmap-xhdpi-v4'  # 图片保存路径
+dir = r'C:\Users\Administrator\Nox_share\ImageShare\res\drawable-hdpi'  # 图片保存路径
 
 class data:
 
@@ -114,19 +115,23 @@ class data:
         # 获取第i行的事件id
         id = sheet.row_values(i)[0]
         print("事件id：{0}".format(id))
-        url = "http://sqwy.wt.com:5130/smart_community_information/emergency/{0}".format(id)
-        header = {"content-type": "application/x-www-form-urlencoded"}
-        get_json = requests.get(url=url, headers=header)
-        message_json = json.loads(get_json.text)
-        message_data = message_json["data"]["emergency_fileList"]
-        count = len(message_data)
-        print('图片张数 ：{}'.format(count))
-        for j in range(count):
-            fileurl = 'http://sqwy.wt.com:5130/'
-            path = fileurl + message_data[j]['fileUrl']
-            print(path)
-            urllib.request.urlretrieve(path, dir + '\\{0}.jpeg'.format(j))  # 下载图片到指定路径 dir
-        return count
+        try:
+            self.delete_picture()
+            url = "http://sqwy.wt.com:5130/smart_community_information/emergency/{0}".format(id)
+            header = {"content-type": "application/x-www-form-urlencoded"}
+            get_json = requests.get(url=url, headers=header)
+            message_json = json.loads(get_json.text)
+            message_data = message_json["data"]["emergency_fileList"]
+            count = len(message_data)
+            print('图片张数 ：{}'.format(count))
+            for j in range(count):
+                fileurl = 'http://sqwy.wt.com:5130/'
+                path = fileurl + message_data[j]['fileUrl']
+                print("图片地址：{0}".format(path))
+                urllib.request.urlretrieve(path, dir + '\\{0}.jpeg'.format(j))  # 下载图片到指定路径 dir
+            return count
+        except(ConnectionError):
+            print("获取图片超时")
 
 
     # 清空图片
@@ -138,6 +143,9 @@ class data:
                 if name.endswith(".jpeg"):  # 填写规则
                     os.remove(os.path.join(root, name))
                     print("Delete File: " + os.path.join(root, name))
+        # 删除文件夹
+        # shutil.rmtree(dir)
+        # os.mkdir(dir)
 
 
         # 类型转code

@@ -11,13 +11,15 @@ if __name__ == '__main__':
         firtype, sectype  = list.type_to_code(i) # 类型转code
         count = list.picture_count(i)
         report = ReportData()
+        report.app_install()
+        report.open_album()
         report.open_app() # 启动APP
         report.login('13734206025', "bgfg1000lbfwlXP#") # 登录
         # report.login(phone, "bgfg1000lbfwlXP#") # 登录
         report.goto_disposal()
         report.fill_in_disposal()
-        report.write_Event(content) # 事件概述
-        report.fill_in_Report_type(firtype, sectype) # 选择事件类型
+        # report.write_Event(content) # 事件概述
+        # report.fill_in_Report_type(firtype, sectype) # 选择事件类型
         report.getpicture(count)  # 选择图片
         # report.submit() # 提交事件
         # report.logout() # 退出登录

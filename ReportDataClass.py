@@ -17,6 +17,19 @@ class ReportData:
         # self.d = u2.connect("emulator-5554")
         self.d = u2.connect("127.0.0.1:62001")
 
+    # 安装APP
+    def app_install(self):
+
+        self.d.app_install('行政版.apk')
+        print("安装完成")
+
+    def open_album(self):
+        self.d.app_start('com.android.gallery3d', 'com.android.gallery3d.app.GalleryActivity')
+        self.d.click(0.485, 0.677)
+        self.d.app_stop('com.android.gallery3d')
+        self.state = 0
+
+
     # 打开APP，定位在第三个APP位置
     def open_app(self):
         self.d.app_stop('com.wanggeyuan.zongzhi')
@@ -26,7 +39,7 @@ class ReportData:
         self.state = 1
 
     # 登陆
-    def login(self,username,password):
+    def login(self,username,password):  # ,username,password
         # 用户名
         self.d(resourceId="com.wanggeyuan.zongzhi:id/username_et").click()
         sleep()
@@ -42,15 +55,25 @@ class ReportData:
 
     # 进入处置页面
     def goto_disposal(self):
-        self.d.xpath('//*[@resource-id="com.wanggeyuan.zongzhi:id/fab01Add"]').click()
-        sleep()
-        self.state = 3
+        try:
+            self.d.xpath('//*[@resource-id="com.wanggeyuan.zongzhi:id/fab01Add"]').click()
+            sleep()
+            self.state = 3
+        except:
+            print('未找到加号按钮')
+
+
+
 
     # 打开自行处置
     def fill_in_disposal(self):
-        self.d.xpath('//*[@resource-id="com.wanggeyuan.zongzhi:id/fb_one"]').click()
-        sleep()
-        self.state = 4
+        try:
+            self.d.xpath('//*[@resource-id="com.wanggeyuan.zongzhi:id/fb_one"]').click()
+            sleep()
+            self.state = 4
+        except:
+            print('未找到指派按钮')
+
 
     # 填写事件描述
     def write_Event(self, str):
@@ -77,18 +100,24 @@ class ReportData:
 
     # 上传图片
     def getpicture(self,num):
-        self.d.xpath('//*[@resource-id="com.wanggeyuan.zongzhi:id/shijian_photo"]').click()
-        sleep()
-        self.d.xpath('//*[@text="相册"]').click()
-        sleep()
-        self.d.xpath(
-            '//*[@resource-id="com.wanggeyuan.zongzhi:id/grid_view_album_select"]/android.widget.FrameLayout[1]/android.widget.ImageView[1]').click()
-        sleep()
-        for i in range(1,num+1):
-            self.d.xpath(('//*[@resource-id="com.wanggeyuan.zongzhi:id/grid_view_image_select"]/android.widget.FrameLayout[{0}]/android.widget.ImageView[1]').format(i)).click()
-        sleep()
-        self.d.xpath('//android.support.v7.widget.LinearLayoutCompat').click()
-        sleep()
+        try:
+            self.d.xpath('//*[@resource-id="com.wanggeyuan.zongzhi:id/shijian_photo"]').click()
+            sleep()
+            self.d.xpath('//*[@text="相册"]').click()
+            sleep()
+            self.d.xpath(
+                '//*[@resource-id="com.wanggeyuan.zongzhi:id/grid_view_album_select"]/android.widget.FrameLayout[1]/android.widget.ImageView[1]').click()
+            sleep()
+            for i in range(1, num + 1):
+                self.d.xpath((
+                                 '//*[@resource-id="com.wanggeyuan.zongzhi:id/grid_view_image_select"]/android.widget.FrameLayout[{0}]/android.widget.ImageView[1]').format(
+                    i)).click()
+            sleep()
+            self.d.xpath('//android.support.v7.widget.LinearLayoutCompat').click()
+            sleep()
+        except:
+            print("未获取到目标图片")
+
 
     # 确定紧急程度类型
     # setid=1:一般，2：紧急；3：重大，4：突发，5：疑难复杂
@@ -405,3 +434,13 @@ class ReportData:
     def stop_app(self):
         self.d.app_stop("com.wanggeyuan.zongzhi")
         self.state = 10
+
+if __name__ == '__main__':
+    rep = ReportData()
+    rep.app_install()
+    rep.open_album()
+    rep.open_app()
+    rep.login()
+    rep.goto_disposal()
+    rep.fill_in_disposal()
+    rep.getpicture(2)
