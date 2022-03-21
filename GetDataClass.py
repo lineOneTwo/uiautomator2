@@ -1,10 +1,12 @@
+import sys
+
 import requests
 import json
-import xlsxwriter as xw
 import xlrd
 import urllib.request
 import os
-import shutil
+from xlutils.copy import copy
+
 
 url = "http://121.30.189.198:6003/smart_community_information/search/emergency/1/10"
 header = {"content-type": "application/x-www-form-urlencoded"}
@@ -48,40 +50,91 @@ class data:
             # print(dic["emergencyFileList"])
             # print(dic["sort"], '\n\t')
 
+        # # 存储数据
+        # def save_data(self):
+        #     message_data = self.get_message_data()
+        #     for q in range(len(message_data)):
+        #         workbook = xw.Workbook('test.xlsx')  # 创建工作簿
+        #         worksheet1 = workbook.add_worksheet("sheet1")  # 创建子表
+        #         worksheet1.activate()  # 激活表
+        #         title = ['事件id', '来源', '类型', '类型描述', '标题', '姓名', '手机号', '地址', '事件概述']  # 设置表头
+        #         worksheet1.write_row('A1', title)  # 从A1单元格开始写入表头
+        #         i = 2  # 从第二行开始写入数据
+        #         for j in range(len(message_data)):
+        #             insertData = [message_data[j]["emergencyId"], message_data[j]["emergencySource"],
+        #                           message_data[j]["emergencyTypeId"],
+        #                           message_data[j]["emergencyTypeCodeDesc"], message_data[j]["emergencyTitle"],
+        #                           message_data[j]["citizenName"],
+        #                           message_data[j]["citizenPhone"], message_data[j]["citizenAddress"],
+        #                           message_data[j]["emergencyContent"]]
+        #             row = 'A' + str(i)
+        #             worksheet1.write_row(row, insertData)
+        #             i += 1
+        #         workbook.close()  # 关闭表
 
-    # 存储数据
-    def save_data(self):
-        message_data = self.get_message_data()
-        for q in range(len(message_data)):
-            workbook = xw.Workbook('test.xlsx')  # 创建工作簿
-            worksheet1 = workbook.add_worksheet("sheet1")  # 创建子表
-            worksheet1.activate()  # 激活表
-            title = ['事件id', '来源', '类型', '类型描述', '标题', '姓名', '手机号', '地址', '事件概述']  # 设置表头
-            worksheet1.write_row('A1', title)  # 从A1单元格开始写入表头
-            i = 2  # 从第二行开始写入数据
-            for j in range(len(message_data)):
-                insertData = [message_data[j]["emergencyId"], message_data[j]["emergencySource"], message_data[j]["emergencyTypeId"],
-                              message_data[j]["emergencyTypeCodeDesc"], message_data[j]["emergencyTitle"], message_data[j]["citizenName"],
-                              message_data[j]["citizenPhone"], message_data[j]["citizenAddress"], message_data[j]["emergencyContent"]]
-                row = 'A' + str(i)
-                worksheet1.write_row(row, insertData)
-                i += 1
-            workbook.close()  # 关闭表
+    # 追加事件数据
+    def write_excel_xls_append(self):
+        message_data =self.get_message_data() # 获取接口返回的事件数据
+
+        workbook = xlrd.open_workbook('test.xlsx')  # 打开工作簿
+        worksheet = workbook.sheet_by_name('sheet1')  # 获取工作簿中的sheet1
+        cols = worksheet.col_values(0,1)  # 获取第一列内容，从第二行开始
+        index = len(message_data)  # 获取需要写入数据的行数
+        rows_old = worksheet.nrows  # 获取表格中已存在的数据的行数
+
+        new_workbook = copy(workbook)  # 将xlrd对象拷贝转化为xlwt对象
+        new_worksheet = new_workbook.get_sheet(0) # 获取第一个sheet
+        count = 0  # 追加条数
+
+        for i in range(index):
+            if message_data[i]['emergencyId']  in cols:
+                print("事件{0}已添加".format(message_data[i]['emergencyId']))
+            else:
+                new_worksheet.write(count + rows_old, 0, message_data[i]['emergencyId'])  # 追加写入数据，注意是从count+rows_old行开始写入
+                new_worksheet.write(count + rows_old, 1, message_data[i]['emergencySource'])
+                new_worksheet.write(count + rows_old, 2, message_data[i]['emergencyTypeId'])
+                new_worksheet.write(count + rows_old, 3,
+                                    message_data[i]['emergencyTypeCodeDesc'])
+                new_worksheet.write(count + rows_old, 4, message_data[i]['emergencyTitle'])
+                new_worksheet.write(count + rows_old, 5, message_data[i]['citizenName'])
+                new_worksheet.write(count + rows_old, 6, message_data[i]['citizenPhone'])
+                new_worksheet.write(count + rows_old, 7, message_data[i]['citizenAddress'])
+                new_worksheet.write(count + rows_old, 8, message_data[i]['emergencyContent'])
+                new_worksheet.write(count + rows_old, 9, 0)
+                count += 1
+                # print("事件{0}写入成功".format(message_data[i]['emergencyId']))
+        new_workbook.save('test.xlsx')  # 保存工作簿
+        # print("{0}写入数据完成{0}".format("*" * 10))
+
 
 
     # 读取数据
     def read_data(self,i):
-        global secondtype, firsttype
+        type = None
+        content = None
+        phone = None
+        count = 0
         # 打开excel
-        Excelfile = xlrd.open_workbook(r'D:\Program Files\JetBrains\PyCharm Community Edition 2020.2\appium\test.xlsx')
+        workbook = xlrd.open_workbook('test.xlsx')
         # 获取sheet内容
-        sheet = Excelfile.sheet_by_name('sheet1')
-        # 获取字段值
-        type = sheet.row_values(i)[3]
-        content = sheet.row_values(i)[8]
-        print("事件概述：{0}".format(content))
-        phone = sheet.row_values(i)[6]
-        return type, content,phone
+        worksheet = workbook.sheet_by_name('sheet1')
+
+        # 判断是否已上传，并获取字段值
+        if worksheet.row_values(i)[9] == 1:
+            print("事件{0}已上传".format(worksheet.row_values(i)[0]))
+            return type, content, phone
+
+        else:
+
+            type = worksheet.row_values(i)[3]
+            content = worksheet.row_values(i)[8]
+            # print("事件概述：{0}".format(content))
+            phone = worksheet.row_values(i)[6]
+            new_workbook = copy(workbook)  # 将xlrd对象拷贝转化为xlwt对象
+            new_worksheet = new_workbook.get_sheet(0)
+            new_worksheet.write(i, 9, 1) # 将是否上传改为1
+            new_workbook.save('test.xlsx')
+            return type, content, phone
 
 
 
@@ -143,9 +196,6 @@ class data:
                 if name.endswith(".jpeg"):  # 填写规则
                     os.remove(os.path.join(root, name))
                     print("Delete File: " + os.path.join(root, name))
-        # 删除文件夹
-        # shutil.rmtree(dir)
-        # os.mkdir(dir)
 
 
         # 类型转code
@@ -214,10 +264,11 @@ class data:
 
 if __name__ == '__main__':
     # data().get_list()
-    #data().save_data()
-    data().picture_count(2)
-    data().delete_picture()
-    # for i in range(1,5):
-    #     data().read_data(i)
+    data().write_excel_xls_append()
+    # data().read_data(2)
+    #data().picture_count(2)
+    #data().delete_picture()
+    for i in range(1,10):
+        data().read_data(i)
     #     data().get_eventtype(i)
     #     data().type_to_code(i)

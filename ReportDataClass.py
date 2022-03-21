@@ -21,12 +21,14 @@ class ReportData:
     def app_install(self):
 
         self.d.app_install('行政版.apk')
-        print("安装完成")
+        print("安装APP")
+
 
     def open_album(self):
         self.d.app_start('com.android.gallery3d', 'com.android.gallery3d.app.GalleryActivity')
         self.d.click(0.485, 0.677)
         self.d.app_stop('com.android.gallery3d')
+        print("启动相册")
         self.state = 0
 
 
@@ -34,8 +36,7 @@ class ReportData:
     def open_app(self):
         self.d.app_stop('com.wanggeyuan.zongzhi')
         self.d.app_start('com.wanggeyuan.zongzhi', 'com.wanggeyuan.zongzhi.main.ui.activity.LoginActivity')
-        # self.d.click(0.617, 0.185)
-        # self.d.wait_timeout(10)
+        print("启动APP")
         self.state = 1
 
     # 登陆
@@ -51,6 +52,7 @@ class ReportData:
         # 点登录
         self.d.xpath('//*[@resource-id="com.wanggeyuan.zongzhi:id/login_btn"]').click()
         sleep()
+        print("完成登录")
         self.state = 2
 
     # 进入处置页面
@@ -80,6 +82,7 @@ class ReportData:
         self.d.click(0.143, 0.165)
         sleep()
         self.d.send_keys(str, clear=True)
+        print("输入事件描述")
         self.state = 5
 
     # 确定位置
@@ -114,6 +117,7 @@ class ReportData:
                     i)).click()
             sleep()
             self.d.xpath('//android.support.v7.widget.LinearLayoutCompat').click()
+            print("上传图片")
             sleep()
         except:
             print("未获取到目标图片")
