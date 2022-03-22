@@ -3,11 +3,9 @@ import random
 import time
 from GetDataClass import *
 
-pic = "C:/Users/wt/Documents/leidian/Pictures"
-
 
 def sleep():
-    time.sleep(3)
+    time.sleep(1)
 
 
 class ReportData:
@@ -17,13 +15,13 @@ class ReportData:
         # self.d = u2.connect("emulator-5554")
         self.d = u2.connect("127.0.0.1:62001")
 
-    # 安装APP
-    def app_install(self):
+    # 清除APP缓存
+    def app_clear(self):
+        self.d.app_clear('com.wanggeyuan.zongzhi')
+        print("清除APP缓存")
 
-        self.d.app_install('行政版.apk')
-        print("安装APP")
 
-
+    # 打开相册
     def open_album(self):
         self.d.app_start('com.android.gallery3d', 'com.android.gallery3d.app.GalleryActivity')
         self.d.click(0.485, 0.677)
@@ -32,7 +30,7 @@ class ReportData:
         self.state = 0
 
 
-    # 打开APP，定位在第三个APP位置
+    # 打开APP，定位在登录页
     def open_app(self):
         self.d.app_stop('com.wanggeyuan.zongzhi')
         self.d.app_start('com.wanggeyuan.zongzhi', 'com.wanggeyuan.zongzhi.main.ui.activity.LoginActivity')
@@ -82,7 +80,6 @@ class ReportData:
         self.d.click(0.143, 0.165)
         sleep()
         self.d.send_keys(str, clear=True)
-        print("输入事件描述")
         self.state = 5
 
     # 确定位置
@@ -107,6 +104,8 @@ class ReportData:
             self.d.xpath('//*[@resource-id="com.wanggeyuan.zongzhi:id/shijian_photo"]').click()
             sleep()
             self.d.xpath('//*[@text="相册"]').click()
+            sleep()
+            self.d.xpath('//*[@resource-id="com.android.packageinstaller:id/permission_allow_button"]').click()
             sleep()
             self.d.xpath(
                 '//*[@resource-id="com.wanggeyuan.zongzhi:id/grid_view_album_select"]/android.widget.FrameLayout[1]/android.widget.ImageView[1]').click()
@@ -441,7 +440,7 @@ class ReportData:
 
 if __name__ == '__main__':
     rep = ReportData()
-    rep.app_install()
+    rep.app_clear()
     rep.open_album()
     rep.open_app()
     rep.login()
