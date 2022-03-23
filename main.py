@@ -3,11 +3,11 @@ from GetDataClass import data as dt
 
 if __name__ == '__main__':
     list = dt()
-    list.get_list()
+    # list.get_list()
     nrows = list.write_excel_xls_append()
     print(nrows)
 
-    for i in range(1,nrows+1):
+    for i in range(1,nrows):
         type, content, phone = list.read_data(i) # 获取数据
         if ((type is None)&(content is None)&(phone is None)): # 返回值为空则跳出循环
             continue
@@ -16,6 +16,7 @@ if __name__ == '__main__':
         print("{0}开始操作APP{0}".format("*"*10))
         report = ReportData()
         report.app_clear()
+        report.open_album()
         report.open_app() # 启动APP
         report.login('13734206025', "bgfg1000lbfwlXP#") # 登录
         # report.login(phone, "bgfg1000lbfwlXP#") # 登录

@@ -7,27 +7,29 @@ import urllib.request
 import os
 from xlutils.copy import copy
 
-
+citizenPhone = '' # 需上传的手机号
 fileurl = 'http://121.30.189.198:5130/'  # 线上环境地址
 events_url = "http://121.30.189.198:5130/smart_community_information/search/emergency/1/10" # 事件列表接口地址
 details_url = "http://121.30.189.198:5130/smart_community_information/emergency/" # 事件详情接口地址
 header = {"content-type": "application/x-www-form-urlencoded"}
-body = {"userAcceptance": 0, "userId": "3", "emergencyStatus": 2}
 
 dir = r'C:\Users\Administrator\Nox_share\ImageShare\res\drawable-hdpi'  # 本地图片保存路径
 
 
 class data:
 
-    def get_message_data(self):
+    def get_message_data(self,citizenPhone):
+        body = {"userAcceptance": 0, "userId": "3", "emergencyStatus": 2, 'citizenPhone': citizenPhone}
+        print(body)
         get_json = requests.post(events_url, data=body, headers=header)
         message_json = json.loads(get_json.text)
+        print(message_json)
         message_data = message_json["data"]["resultList"]
         # print(message_data)
         return message_data
 
     def get_list(self):
-        message_data = self.get_message_data()
+        message_data = self.get_message_data(citizenPhone)
         for i in range(len(message_data)):
             dic = message_data[i]
             # print(dic["emergencyId"])
@@ -78,39 +80,48 @@ class data:
 
     # 追加事件数据
     def write_excel_xls_append(self):
-        message_data =self.get_message_data() # 获取接口返回的事件数据
-        index = len(message_data)  # 获取需要写入数据的行数
 
-        workbook = xlrd.open_workbook('test.xlsx')  # 打开工作簿
-        worksheet = workbook.sheet_by_name('sheet1')  # 获取工作簿中的sheet1
-        cols = worksheet.col_values(0,1)  # 获取第一列内容，从第二行开始
-        rows_old = worksheet.nrows  # 获取表格中已存在的数据的行数
+        personbook = xlrd.open_workbook('person.xlsx')  # 打开person表
+        personsheet = personbook.sheet_by_name('总表')  # 获取总表
+        rows_old = personsheet.nrows  # 获取表格中已存在的数据的行数
+        rows_new = ''
+        for i in range (2,rows_old):
+            person_phone = personsheet.cell_value(i, 2)  # 获取指定单元格数据
+            print(person_phone)
+            message_data = self.get_message_data(person_phone)  # 获取接口返回的事件数据
+            index = len(message_data)  # 获取需要写入数据的行数
 
-        new_workbook = copy(workbook)  # 将xlrd对象拷贝转化为xlwt对象
-        new_worksheet = new_workbook.get_sheet(0) # 获取第一个sheet
-        count = 0  # 追加条数
+            workbook = xlrd.open_workbook('test.xlsx')  # 打开工作簿
+            worksheet = workbook.sheet_by_name('sheet1')  # 获取工作簿中的sheet1
+            cols = worksheet.col_values(0, 1)  # 获取第一列内容，从第二行开始
+            rows_old = worksheet.nrows  # 获取表格中已存在的数据的行数
 
-        for i in range(index):
-            if message_data[i]['emergencyId']  in cols:
-                print("事件{0}已添加".format(message_data[i]['emergencyId']))
-            else:
-                new_worksheet.write(count + rows_old, 0, message_data[i]['emergencyId'])  # 追加写入数据，从count+rows_old行开始写入
-                new_worksheet.write(count + rows_old, 1, message_data[i]['emergencySource'])
-                new_worksheet.write(count + rows_old, 2, message_data[i]['emergencyTypeId'])
-                new_worksheet.write(count + rows_old, 3,
-                                    message_data[i]['emergencyTypeCodeDesc'])
-                new_worksheet.write(count + rows_old, 4, message_data[i]['emergencyTitle'])
-                new_worksheet.write(count + rows_old, 5, message_data[i]['citizenName'])
-                new_worksheet.write(count + rows_old, 6, message_data[i]['citizenPhone'])
-                new_worksheet.write(count + rows_old, 7, message_data[i]['citizenAddress'])
-                new_worksheet.write(count + rows_old, 8, message_data[i]['emergencyContent'])
-                new_worksheet.write(count + rows_old, 9, 0)
-                count += 1
-                # print("事件{0}写入成功".format(message_data[i]['emergencyId']))
-        new_workbook.save('test.xlsx')  # 保存工作簿
-        rows_new = count + rows_old  # 获取表格中已存在的数据的行数
-        print("当前行数{}".format(rows_new))
-        print("{0}写入数据完成{0}".format("*" * 10))
+            new_workbook = copy(workbook)  # 将xlrd对象拷贝转化为xlwt对象
+            new_worksheet = new_workbook.get_sheet(0)  # 获取第一个sheet
+            count = 0  # 追加条数
+
+            for i in range(index):
+                if message_data[i]['emergencyId'] in cols:
+                    print("事件{0}已添加".format(message_data[i]['emergencyId']))
+                else:
+                    new_worksheet.write(count + rows_old, 0,
+                                        message_data[i]['emergencyId'])  # 追加写入数据，从count+rows_old行开始写入
+                    new_worksheet.write(count + rows_old, 1, message_data[i]['emergencySource'])
+                    new_worksheet.write(count + rows_old, 2, message_data[i]['emergencyTypeId'])
+                    new_worksheet.write(count + rows_old, 3,
+                                        message_data[i]['emergencyTypeCodeDesc'])
+                    new_worksheet.write(count + rows_old, 4, message_data[i]['emergencyTitle'])
+                    new_worksheet.write(count + rows_old, 5, message_data[i]['citizenName'])
+                    new_worksheet.write(count + rows_old, 6, message_data[i]['citizenPhone'])
+                    new_worksheet.write(count + rows_old, 7, message_data[i]['citizenAddress'])
+                    new_worksheet.write(count + rows_old, 8, message_data[i]['emergencyContent'])
+                    new_worksheet.write(count + rows_old, 9, 0)
+                    count += 1
+                    # print("事件{0}写入成功".format(message_data[i]['emergencyId']))
+            new_workbook.save('test.xlsx')  # 保存工作簿
+            rows_new = count + rows_old  # 获取表格中已存在的数据的行数
+            print("当前行数{}".format(rows_new))
+            print("{0}写入数据完成{0}".format("*" * 10))
         return rows_new
 
     # 读取数据
@@ -294,7 +305,7 @@ if __name__ == '__main__':
     # data().get_list()
     data().write_excel_xls_append()
     # data().read_data(2)
-    data().picture_count(2)
+    # data().picture_count(2)
     #data().delete_picture()
     # data().read_data(2)
     # data().get_eventtype(i)
