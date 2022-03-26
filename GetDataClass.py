@@ -20,7 +20,6 @@ class data:
 
     def get_message_data(self,citizenPhone):
         body = {"userAcceptance": 0, "userId": "3", "emergencyStatus": 2, 'citizenPhone': citizenPhone}
-        print(body)
         get_json = requests.post(events_url, data=body, headers=header)
         message_json = json.loads(get_json.text)
         print(message_json)
