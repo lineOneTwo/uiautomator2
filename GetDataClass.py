@@ -8,12 +8,12 @@ import os
 from xlutils.copy import copy
 
 citizenPhone = '' # 需上传的手机号
-fileurl = 'http://121.30.189.198:5130/'  # 线上环境地址
-events_url = "http://121.30.189.198:5130/smart_community_information/search/emergency/1/10" # 事件列表接口地址
-details_url = "http://121.30.189.198:5130/smart_community_information/emergency/" # 事件详情接口地址
+fileurl = ''  # 线上环境地址
+events_url = "" # 事件列表接口地址
+details_url = "" # 事件详情接口地址
 header = {"content-type": "application/x-www-form-urlencoded"}
 
-dir = r'C:\Users\Administrator\Nox_share\ImageShare\res\drawable-hdpi'  # 本地图片保存路径
+dir = r'\Nox_share\ImageShare\res\drawable-hdpi'  # 本地图片保存路径
 
 
 class data:
@@ -24,36 +24,8 @@ class data:
         message_json = json.loads(get_json.text)
         print(message_json)
         message_data = message_json["data"]["resultList"]
-        # print(message_data)
         return message_data
 
-    def get_list(self):
-        message_data = self.get_message_data(citizenPhone)
-        for i in range(len(message_data)):
-            dic = message_data[i]
-            # print(dic["emergencyId"])
-            # print(dic["emergencySource"])
-            # print(dic["emergencyTypeId"])
-            # print(dic["emergencyTypeDetails"])
-            # print(dic["emergencyTitle"])
-            # print(dic["orgTreePath"])
-            # print(dic["orgTreePathDetails"])
-            # print(dic["citizenName"])
-            # print(dic["citizenPhone"])
-            # print(dic["citizenAddress"])
-            # print(dic["emergencyAddress"])
-            # print(dic["emergencyContent"])
-            # print(dic["createTime"])
-            # print(dic["handlerPeople"])
-            # print(dic["citizenUserId"])
-            # print(dic["emergencyStatus"])
-            # print(dic["emergencyStatusDesc"])
-            # print(dic["startTime"])
-            # print(dic["stopTime"])
-            # print(dic["superviseStatus"])
-            # print(dic["superviseStatusDesc"])
-            # print(dic["emergencyFileList"])
-            # print(dic["sort"], '\n\t')
 
         # # 存储数据
         # def save_data(self):
@@ -76,10 +48,10 @@ class data:
         #             worksheet1.write_row(row, insertData)
         #             i += 1
         #         workbook.close()  # 关闭表
-
+        
+        
     # 追加事件数据
     def write_excel_xls_append(self):
-
         personbook = xlrd.open_workbook('person.xlsx')  # 打开person表
         personsheet = personbook.sheet_by_name('总表')  # 获取总表
         rows_old = personsheet.nrows  # 获取表格中已存在的数据的行数
@@ -148,34 +120,6 @@ class data:
         new_worksheet.write(i, 9, 1)  # 将是否上传改为1
         new_workbook.save('test.xlsx')  # 保存工作簿
 
-    #     # 读取数据
-    #
-    # def read_data(self, i):
-    #     type = None
-    #     content = None
-    #     phone = None
-    #     count = 0
-    #     # 打开excel
-    #     workbook = xlrd.open_workbook('test.xlsx')
-    #     # 获取sheet内容
-    #     worksheet = workbook.sheet_by_name('sheet1')
-    #
-    #     # 判断是否已上传，并获取字段值
-    #     if worksheet.row_values(i)[9] == 1:
-    #         print("事件{0}已上传".format(worksheet.row_values(i)[0]))
-    #         return type, content, phone
-    #
-    #     else:
-    #
-    #         type = worksheet.row_values(i)[3]
-    #         content = worksheet.row_values(i)[8]
-    #         # print("事件概述：{0}".format(content))
-    #         phone = worksheet.row_values(i)[6]
-    #         new_workbook = copy(workbook)  # 将xlrd对象拷贝转化为xlwt对象
-    #         new_worksheet = new_workbook.get_sheet(0)
-    #         new_worksheet.write(i, 9, 1)  # 将是否上传改为1
-    #         new_workbook.save('test.xlsx')
-    #         return type, content, phone
 
     # 获取类型文字  需要从第一行开始取
     def get_eventtype(self,i):
