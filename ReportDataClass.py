@@ -2,6 +2,7 @@ import uiautomator2 as u2
 import random
 import time
 from GetDataClass import *
+from GetDataClass import *
 
 
 def sleep():
@@ -77,26 +78,45 @@ class ReportData:
 
     # 填写事件描述
     def write_Event(self, str):
-        self.d.click(0.143, 0.165)
+        try:
+            self.d.click(0.143, 0.165)
+            sleep()
+            self.d.send_keys(str, clear=True)
+            self.state = 5
+        except:
+            print("未找到输入框")
+
+    # 开启定位权限
+    def open_location(self):
+        self.d.app_start('com.android.settings', 'com.android.settings.Settings$ManageApplicationsActivity')
         sleep()
-        self.d.send_keys(str, clear=True)
-        self.state = 5
+        self.d.click(0.081, 0.703)
+        sleep()
+        self.d.click(0.121, 0.405)
+        sleep()
+        self.d.click(0.909, 0.204)
+        sleep()
+        self.d.app_stop('com.android.settings')
+
 
     # 确定位置
     def fill_in_location(self):
-        self.d.click(0.37, 0.48)
-        sleep()
-        self.d.click(0.932, 0.498)
-        sleep()
-        self.d.click(0.932, 0.498)
-        sleep()
-        self.d.swipe(0.454, 0.102, random.randint(1, 100) / 100, random.randint(1, 100) / 100, duration=0.1)
-        self.d.swipe(0.454, 0.102, random.randint(1, 100) / 100, random.randint(1, 100) / 100, duration=0.1)
-        self.d.swipe(0.454, 0.102, random.randint(1, 100) / 100, random.randint(1, 100) / 100, duration=0.1)
-        self.d.swipe(0.454, 0.102, random.randint(1, 100) / 100, random.randint(1, 100) / 100, duration=0.1)
-        sleep()
-        self.d.click(0.163, 0.561)
-        self.state = 6
+        try:
+            self.d.click(0.37, 0.48)
+            sleep()
+            self.d.click(0.932, 0.498)
+            sleep()
+            self.d.click(0.932, 0.498)
+            sleep()
+            self.d.swipe(0.454, 0.102, random.randint(1, 100) / 100, random.randint(1, 100) / 100, duration=0.1)
+            self.d.swipe(0.454, 0.102, random.randint(1, 100) / 100, random.randint(1, 100) / 100, duration=0.1)
+            self.d.swipe(0.454, 0.102, random.randint(1, 100) / 100, random.randint(1, 100) / 100, duration=0.1)
+            self.d.swipe(0.454, 0.102, random.randint(1, 100) / 100, random.randint(1, 100) / 100, duration=0.1)
+            sleep()
+            self.d.click(0.163, 0.561)
+            self.state = 6
+        except:
+            print("未找到确定按钮")
 
     # 上传图片
     def getpicture(self,num):
@@ -149,33 +169,36 @@ class ReportData:
     # 填写上报类型
     # 1:矛盾纠纷，2：治安问题；3：风险隐患，4：利益群体信访诉求；5：其他
     def fill_in_Report_type(self, pId, bId):
-        self.d.click(0.151, 0.597)
-        sleep()
-        if pId == 1:
-            self.d.click(0.107, 0.131)
+        try:
+            self.d.click(0.151, 0.597)
             sleep()
-            self.report_Type_1(bId)
-        elif pId == 2:
-            self.d.click(0.107, 0.212)
-            sleep()
-            self.report_Type_2(bId)
-        elif pId == 3:
-            self.d.click(0.107, 0.293)
-            sleep()
-            self.report_Type_3(bId)
-        elif pId == 4:
-            self.d.click(0.103, 0.375)
-            sleep()
-            self.report_Type_4(bId)
-        elif pId == 5:
-            self.d.click(0.107, 0.456)
-            sleep()
-            self.report_Type_5(bId)
-        elif pId == 6:
-            self.d.click(0.107, 0.536)
-            sleep()
+            if pId == 1:
+                self.d.click(0.107, 0.131)
+                sleep()
+                self.report_Type_1(bId)
+            elif pId == 2:
+                self.d.click(0.107, 0.212)
+                sleep()
+                self.report_Type_2(bId)
+            elif pId == 3:
+                self.d.click(0.107, 0.293)
+                sleep()
+                self.report_Type_3(bId)
+            elif pId == 4:
+                self.d.click(0.103, 0.375)
+                sleep()
+                self.report_Type_4(bId)
+            elif pId == 5:
+                self.d.click(0.107, 0.456)
+                sleep()
+                self.report_Type_5(bId)
+            elif pId == 6:
+                self.d.click(0.107, 0.536)
+                sleep()
 
-        self.state = 8
+            self.state = 8
+        except:
+            print("未找到事件类型")
 
     # 1:劳资关系，2：权属纠纷，3：经济纠纷；4：旅游领域，5：环境污染，6：医患，7：物业纠纷。8：教育，9：保险，10：交通事故纠纷；11：国土，12：集体土地，13：村矿，14：婚姻，15：邻里，16：农村干部。17：涉疫矛盾，18：其他
     def report_Type_1(self, setId):
@@ -417,7 +440,10 @@ class ReportData:
 
     # 提交事件
     def submit(self):
-        self.d.xpath('//*[@resource-id="com.wanggeyuan.zongzhi:id/right_text"]').click()
+        try:
+            self.d.xpath('//*[@resource-id="com.wanggeyuan.zongzhi:id/right_text"]').click()
+        except:
+            print("未找到提交按钮")
 
     # 退出
     def logout(self):
@@ -441,9 +467,10 @@ class ReportData:
 if __name__ == '__main__':
     rep = ReportData()
     rep.app_clear()
+    rep.open_location()
     rep.open_album()
     rep.open_app()
-    rep.login()
-    rep.goto_disposal()
-    rep.fill_in_disposal()
-    rep.getpicture(2)
+    # rep.login()
+    # rep.goto_disposal()
+    # rep.fill_in_disposal()
+    # rep.getpicture(2)

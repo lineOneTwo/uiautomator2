@@ -9,7 +9,8 @@ from xlutils.copy import copy
 
 citizenPhone = '' # 需上传的手机号
 fileurl = 'http://121.30.189.198:5130/'  # 线上环境地址
-events_url = "http://121.30.189.198:5130/smart_community_information/search/emergency/1/10" # 事件列表接口地址
+#events_url = "http://121.30.189.198:5130/smart_community_information/search/emergency/1/10" # 事件列表接口地址
+events_url = "http://sqwy.wt.com:5130/smart_community_information/search/emergency/1/10"
 details_url = "http://121.30.189.198:5130/smart_community_information/emergency/" # 事件详情接口地址
 header = {"content-type": "application/x-www-form-urlencoded"}
 
@@ -19,13 +20,16 @@ dir = r'C:\Users\Administrator\Nox_share\ImageShare\res\drawable-hdpi'  # 本地
 class data:
 
     def get_message_data(self,citizenPhone):
-        body = {"userAcceptance": 0, "userId": "3", "emergencyStatus": 2, 'citizenPhone': citizenPhone}
-        get_json = requests.post(events_url, data=body, headers=header)
-        message_json = json.loads(get_json.text)
-        print(message_json)
-        message_data = message_json["data"]["resultList"]
-        # print(message_data)
-        return message_data
+        try:
+            body = {"userAcceptance": 0, "userId": "3", "emergencyStatus": 2, 'citizenPhone': citizenPhone}
+            get_json = requests.post(events_url, data=body, headers=header)
+            message_json = json.loads(get_json.text)
+            print(message_json)
+            message_data = message_json["data"]["resultList"]
+            # print(message_data)
+            return message_data
+        except(Exception):
+            print("接口调用异常")
 
     def get_list(self):
         message_data = self.get_message_data(citizenPhone)
@@ -80,48 +84,58 @@ class data:
     # 追加事件数据
     def write_excel_xls_append(self):
 
-        personbook = xlrd.open_workbook('person.xlsx')  # 打开person表
-        personsheet = personbook.sheet_by_name('总表')  # 获取总表
-        rows_old = personsheet.nrows  # 获取表格中已存在的数据的行数
-        rows_new = ''
-        for i in range (2,rows_old):
-            person_phone = personsheet.cell_value(i, 2)  # 获取指定单元格数据
-            print(person_phone)
-            message_data = self.get_message_data(person_phone)  # 获取接口返回的事件数据
-            index = len(message_data)  # 获取需要写入数据的行数
+        try:
+            personbook = xlrd.open_workbook("平城区网格员基本信息.xls") # 打开指定文档
+            sheetName = personbook.sheet_names() # 获取表格所有sheet名称
+            rows_new = '' # 行数
+            for i in range(len(sheetName)):
+                personsheet = personbook.sheet_by_name(sheetName[i])  # 获取总表
+                rows_old = personsheet.nrows  # 获取表格中已存在的数据的行数
+                for i in range(2, rows_old): # 从第二行开始
+                    person_phone = personsheet.cell_value(i, 2)  # 获取指定单元格数据
+                    print(person_phone)
+                    message_data = self.get_message_data(person_phone)  # 获取接口返回的事件数据
+                    index = len(message_data)  # 获取需要写入数据的行数
 
+                    workbook = xlrd.open_workbook('test.xlsx')  # 打开工作簿
+                    worksheet = workbook.sheet_by_name('sheet1')  # 获取工作簿中的sheet1
+                    cols = worksheet.col_values(0, 1)  # 获取第一列内容，从第二行开始
+                    rows_old = worksheet.nrows  # 获取表格中已存在的数据的行数
+
+                    new_workbook = copy(workbook)  # 将xlrd对象拷贝转化为xlwt对象
+                    new_worksheet = new_workbook.get_sheet(0)  # 获取第一个sheet
+                    count = 0  # 追加条数
+
+                    for i in range(index):
+                        if message_data[i]['emergencyId'] in cols:
+                            print("事件{0}已添加".format(message_data[i]['emergencyId']))
+                        else:
+                            new_worksheet.write(count + rows_old, 0,
+                                                message_data[i]['emergencyId'])  # 追加写入数据，从count+rows_old行开始写入
+                            new_worksheet.write(count + rows_old, 1, message_data[i]['emergencySource'])
+                            new_worksheet.write(count + rows_old, 2, message_data[i]['emergencyTypeId'])
+                            new_worksheet.write(count + rows_old, 3,
+                                                message_data[i]['emergencyTypeCodeDesc'])
+                            new_worksheet.write(count + rows_old, 4, message_data[i]['emergencyTitle'])
+                            new_worksheet.write(count + rows_old, 5, message_data[i]['citizenName'])
+                            new_worksheet.write(count + rows_old, 6, message_data[i]['citizenPhone'])
+                            new_worksheet.write(count + rows_old, 7, message_data[i]['citizenAddress'])
+                            new_worksheet.write(count + rows_old, 8, message_data[i]['emergencyContent'])
+                            new_worksheet.write(count + rows_old, 9, 0)
+                            count += 1
+                            # print("事件{0}写入成功".format(message_data[i]['emergencyId']))
+                    new_workbook.save('test.xlsx')  # 保存工作簿
+                    rows_new = count + rows_old  # 获取表格中已存在的数据的行数
+                    print("当前行数{}".format(rows_new))
+                    print("{0}写入数据完成{0}".format("*" * 10))
+            return rows_new
+        except:
             workbook = xlrd.open_workbook('test.xlsx')  # 打开工作簿
             worksheet = workbook.sheet_by_name('sheet1')  # 获取工作簿中的sheet1
-            cols = worksheet.col_values(0, 1)  # 获取第一列内容，从第二行开始
-            rows_old = worksheet.nrows  # 获取表格中已存在的数据的行数
+            rows_new = worksheet.nrows  # 获取表格中已存在的数据的行数
+            return  rows_new
 
-            new_workbook = copy(workbook)  # 将xlrd对象拷贝转化为xlwt对象
-            new_worksheet = new_workbook.get_sheet(0)  # 获取第一个sheet
-            count = 0  # 追加条数
 
-            for i in range(index):
-                if message_data[i]['emergencyId'] in cols:
-                    print("事件{0}已添加".format(message_data[i]['emergencyId']))
-                else:
-                    new_worksheet.write(count + rows_old, 0,
-                                        message_data[i]['emergencyId'])  # 追加写入数据，从count+rows_old行开始写入
-                    new_worksheet.write(count + rows_old, 1, message_data[i]['emergencySource'])
-                    new_worksheet.write(count + rows_old, 2, message_data[i]['emergencyTypeId'])
-                    new_worksheet.write(count + rows_old, 3,
-                                        message_data[i]['emergencyTypeCodeDesc'])
-                    new_worksheet.write(count + rows_old, 4, message_data[i]['emergencyTitle'])
-                    new_worksheet.write(count + rows_old, 5, message_data[i]['citizenName'])
-                    new_worksheet.write(count + rows_old, 6, message_data[i]['citizenPhone'])
-                    new_worksheet.write(count + rows_old, 7, message_data[i]['citizenAddress'])
-                    new_worksheet.write(count + rows_old, 8, message_data[i]['emergencyContent'])
-                    new_worksheet.write(count + rows_old, 9, 0)
-                    count += 1
-                    # print("事件{0}写入成功".format(message_data[i]['emergencyId']))
-            new_workbook.save('test.xlsx')  # 保存工作簿
-            rows_new = count + rows_old  # 获取表格中已存在的数据的行数
-            print("当前行数{}".format(rows_new))
-            print("{0}写入数据完成{0}".format("*" * 10))
-        return rows_new
 
     # 读取数据
     def read_data(self,i):
@@ -142,11 +156,14 @@ class data:
             return type, content, phone
 
     def tag_submit(self,i):
-        workbook = xlrd.open_workbook('test.xlsx') # 打开excel
-        new_workbook = copy(workbook)  # 将xlrd对象拷贝转化为xlwt对象
-        new_worksheet = new_workbook.get_sheet(0)  # 获取第一个sheet
-        new_worksheet.write(i, 9, 1)  # 将是否上传改为1
-        new_workbook.save('test.xlsx')  # 保存工作簿
+        try:
+            workbook = xlrd.open_workbook('test.xlsx')  # 打开excel
+            new_workbook = copy(workbook)  # 将xlrd对象拷贝转化为xlwt对象
+            new_worksheet = new_workbook.get_sheet(0)  # 获取第一个sheet
+            new_worksheet.write(i, 9, 1)  # 将是否上传改为1
+            new_workbook.save('test.xlsx')  # 保存工作簿
+        except:
+            print("修改状态失败")
 
     #     # 读取数据
     #
@@ -243,28 +260,26 @@ class data:
         print('事件类型：{0}'.format(eventtype))
 
         # excel表中的事件大类，对应到APP的大类code码
-        if eventtype[0] == '矛盾纠纷':
-            fircode = 1
+        if eventtype[0] == '疫情防控':
+            fircode = 5
         elif eventtype[0] == '治安问题':
             fircode = 2
         elif eventtype[0] == '风险隐患':
             fircode = 3
         elif eventtype[0] == '信访问题':
             fircode = 4
-        elif eventtype[0] == '疫情防控':
-            fircode = 5
-        elif eventtype[0] in ['其他事件','宣传工作']:
+        elif eventtype[0] in ['其他事件','宣传工作','矛盾纠纷']:
             fircode = 6
 
         # excel表中的事件小类，对应到APP的小类code码
         if fircode <= 5 :
             # 小类转换
-            typelist_1 = ['劳资关系', '涉疫隐患', '国家安全', '军队退役人员群体', '情况摸底']
-            typelist_2 = ['权属纠纷', '涉黑涉恶', '涉疫排查']
+            typelist_1 = ['劳资关系', '涉黑涉恶', '国家安全', '军队退役人员群体', '情况摸底']
+            typelist_2 = ['权属纠纷', '道路交通', '涉疫排查']
             typelist_3 = ['经济纠纷']
             typelist_4 = ['旅游领域']
-            typelist_5 = ['消防安全', '环境卫生','道路交通安全']
-            typelist_6 = ['医患关系', '涉疫宣传', '其他','涉疫矛盾纠纷']
+            typelist_5 = ['消防安全', '环境卫生','道路交通安全','其他']
+            typelist_6 = ['医患关系', '涉疫宣传', '其他', '涉疫矛盾纠纷', '涉疫隐患','黄赌毒问题']
             typelist_7 = ['物业纠纷']
             typelist_8 = ['教育领域']
             typelist_9 = ['小区物业管理群体']
@@ -303,6 +318,7 @@ class data:
 if __name__ == '__main__':
     # data().get_list()
     data().write_excel_xls_append()
+    # data().read_excel()
     # data().read_data(2)
     # data().picture_count(2)
     #data().delete_picture()

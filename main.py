@@ -16,16 +16,18 @@ if __name__ == '__main__':
         print("{0}开始操作APP{0}".format("*"*10))
         report = ReportData()
         report.app_clear()
+        report.open_location()
         report.open_album()
         report.open_app() # 启动APP
-        report.login('13734206025', "bgfg1000lbfwlXP#") # 登录
-        # report.login(phone, "bgfg1000lbfwlXP#") # 登录
+        #report.login('13734206025', "bgfg1000lbfwlXP#") # 登录
+        report.login(phone, "bgfg1000lbfwlXP#") # 登录
         report.goto_disposal()
         report.fill_in_disposal()
+        report.fill_in_location()
         report.write_Event(content) # 事件概述
         report.fill_in_Report_type(firtype, sectype) # 选择事件类型
         report.getpicture(count)  # 选择图片
-        # report.submit() # 提交事件
+        report.submit() # 提交事件
         list.tag_submit(i)
         # report.logout() # 退出登录
         report.stop_app() # 停止APP
