@@ -4,9 +4,8 @@ import time
 from GetDataClass import *
 from GetDataClass import *
 
-
 def sleep():
-    time.sleep(1)
+    time.sleep(2)
 
 
 class ReportData:
@@ -19,7 +18,7 @@ class ReportData:
     # 清除APP缓存
     def app_clear(self):
         self.d.app_clear('com.wanggeyuan.zongzhi')
-        print("清除APP缓存")
+        log.write("清除APP缓存")
 
 
     # 打开相册
@@ -27,7 +26,7 @@ class ReportData:
         self.d.app_start('com.android.gallery3d', 'com.android.gallery3d.app.GalleryActivity')
         self.d.click(0.485, 0.677)
         self.d.app_stop('com.android.gallery3d')
-        print("启动相册")
+        log.write("启动相册")
         self.state = 0
 
 
@@ -35,7 +34,7 @@ class ReportData:
     def open_app(self):
         self.d.app_stop('com.wanggeyuan.zongzhi')
         self.d.app_start('com.wanggeyuan.zongzhi', 'com.wanggeyuan.zongzhi.main.ui.activity.LoginActivity')
-        print("启动APP")
+        log.write("启动APP")
         self.state = 1
 
     # 登陆
@@ -51,8 +50,13 @@ class ReportData:
         # 点登录
         self.d.xpath('//*[@resource-id="com.wanggeyuan.zongzhi:id/login_btn"]').click()
         sleep()
-        print("完成登录")
+        message = self.d.toast.get_message()
+        log.write(message)
+        log.write("登录账号：{0}".format(username))
         self.state = 2
+        return message
+
+
 
     # 进入处置页面
     def goto_disposal(self):
@@ -61,8 +65,7 @@ class ReportData:
             sleep()
             self.state = 3
         except:
-            print('未找到加号按钮')
-
+            log.write('未找到加号按钮')
 
 
 
@@ -73,7 +76,7 @@ class ReportData:
             sleep()
             self.state = 4
         except:
-            print('未找到指派按钮')
+            log.write('未找到指派按钮')
 
 
     # 填写事件描述
@@ -84,7 +87,7 @@ class ReportData:
             self.d.send_keys(str, clear=True)
             self.state = 5
         except:
-            print("未找到输入框")
+            log.write("未找到输入框")
 
     # 开启定位权限
     def open_location(self):
@@ -116,7 +119,7 @@ class ReportData:
             self.d.click(0.163, 0.561)
             self.state = 6
         except:
-            print("未找到确定按钮")
+            log.write("未找到确定按钮")
 
     # 上传图片
     def getpicture(self,num):
@@ -136,31 +139,31 @@ class ReportData:
                     i)).click()
             sleep()
             self.d.xpath('//android.support.v7.widget.LinearLayoutCompat').click()
-            print("上传图片")
+            log.write("上传图片")
             sleep()
         except:
-            print("未获取到目标图片")
+            log.write("未获取到目标图片")
 
 
     # 确定紧急程度类型
     # setid=1:一般，2：紧急；3：重大，4：突发，5：疑难复杂
     def fill_in_degree_emergency(self, setId):
-        self.d.click(0.151, 0.539)
+        self.d.xpath('//*[@resource-id="com.wanggeyuan.zongzhi:id/shangbao_chengduBtn"]').click()
         sleep()
         if setId == 1:
-            self.d.click(0.179, 0.422)
+            self.d.xpath('//*[@resource-id="com.wanggeyuan.zongzhi:id/md_contentRecyclerView"]/android.widget.LinearLayout[1]').click()
             sleep()
         elif setId == 2:
-            self.d.click(0.179, 0.478)
+            self.d.xpath('//*[@resource-id="com.wanggeyuan.zongzhi:id/md_contentRecyclerView"]/android.widget.LinearLayout[2]').click()
             sleep()
         elif setId == 3:
-            self.d.click(0.179, 0.541)
+            self.d.xpath('//*[@resource-id="com.wanggeyuan.zongzhi:id/md_contentRecyclerView"]/android.widget.LinearLayout[3]').click()
             sleep()
         elif setId == 4:
-            self.d.click(0.179, 0.599)
+            self.d.xpath('//*[@resource-id="com.wanggeyuan.zongzhi:id/md_contentRecyclerView"]/android.widget.LinearLayout[4]').click()
             sleep()
         elif setId == 5:
-            self.d.click(0.179, 0.657)
+            self.d.xpath('//*[@resource-id="com.wanggeyuan.zongzhi:id/md_contentRecyclerView"]/android.widget.LinearLayout[5]').click()
             sleep()
 
         self.state = 7
@@ -170,35 +173,35 @@ class ReportData:
     # 1:矛盾纠纷，2：治安问题；3：风险隐患，4：利益群体信访诉求；5：其他
     def fill_in_Report_type(self, pId, bId):
         try:
-            self.d.click(0.151, 0.597)
+            self.d.xpath('//*[@resource-id="com.wanggeyuan.zongzhi:id/shangbao_type"]').click()
             sleep()
             if pId == 1:
-                self.d.click(0.107, 0.131)
+                self.d.xpath('//*[@text="矛盾纠纷"]').click()
                 sleep()
                 self.report_Type_1(bId)
             elif pId == 2:
-                self.d.click(0.107, 0.212)
+                self.d.xpath('//*[@text="治安问题"]').click()
                 sleep()
                 self.report_Type_2(bId)
             elif pId == 3:
-                self.d.click(0.107, 0.293)
+                self.d.xpath('//*[@text="风险隐患"]').click()
                 sleep()
                 self.report_Type_3(bId)
             elif pId == 4:
-                self.d.click(0.103, 0.375)
+                self.d.xpath('//*[@text="利益群体信访诉求"]').click()
                 sleep()
                 self.report_Type_4(bId)
             elif pId == 5:
-                self.d.click(0.107, 0.456)
+                self.d.xpath('//*[@text="疫情防控"]').click()
                 sleep()
                 self.report_Type_5(bId)
             elif pId == 6:
-                self.d.click(0.107, 0.536)
+                self.d.xpath('//*[@text="其他事件"]').click()
                 sleep()
 
             self.state = 8
         except:
-            print("未找到事件类型")
+            log.write("未找到事件类型")
 
     # 1:劳资关系，2：权属纠纷，3：经济纠纷；4：旅游领域，5：环境污染，6：医患，7：物业纠纷。8：教育，9：保险，10：交通事故纠纷；11：国土，12：集体土地，13：村矿，14：婚姻，15：邻里，16：农村干部。17：涉疫矛盾，18：其他
     def report_Type_1(self, setId):
@@ -443,7 +446,7 @@ class ReportData:
         try:
             self.d.xpath('//*[@resource-id="com.wanggeyuan.zongzhi:id/right_text"]').click()
         except:
-            print("未找到提交按钮")
+            log.write("未找到提交按钮")
 
     # 退出
     def logout(self):
@@ -456,7 +459,7 @@ class ReportData:
         self.d.xpath('//*[@resource-id="com.wanggeyuan.zongzhi:id/logout_btn"]').click()
         sleep()
         self.d.xpath('//*[@resource-id="com.wanggeyuan.zongzhi:id/md_buttonDefaultPositive"]').click()
-        print("退出登录")
+        log.write("退出登录")
         self.state = 9
 
     # 关闭APP

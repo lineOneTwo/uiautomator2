@@ -6,6 +6,7 @@ import xlrd
 import urllib.request
 import os
 from xlutils.copy import copy
+import logger
 
 citizenPhone = '' # 需上传的手机号
 fileurl = 'http://121.30.189.198:5130/'  # 线上环境地址
@@ -15,6 +16,7 @@ details_url = "http://121.30.189.198:5130/smart_community_information/emergency/
 header = {"content-type": "application/x-www-form-urlencoded"}
 
 dir = r'C:\Users\Administrator\Nox_share\ImageShare\res\drawable-hdpi'  # 本地图片保存路径
+log = logger.Logger()
 
 
 class data:
@@ -24,12 +26,12 @@ class data:
             body = {"userAcceptance": 0, "userId": "3", "emergencyStatus": 2, 'citizenPhone': citizenPhone}
             get_json = requests.post(events_url, data=body, headers=header)
             message_json = json.loads(get_json.text)
-            print(message_json)
+            # print(message_json)
             message_data = message_json["data"]["resultList"]
             # print(message_data)
             return message_data
         except(Exception):
-            print("接口调用异常")
+            log.write("接口调用异常")
 
     def get_list(self):
         message_data = self.get_message_data(citizenPhone)
@@ -93,7 +95,7 @@ class data:
                 rows_old = personsheet.nrows  # 获取表格中已存在的数据的行数
                 for i in range(2, rows_old): # 从第二行开始
                     person_phone = personsheet.cell_value(i, 2)  # 获取指定单元格数据
-                    print(person_phone)
+                    log.write(person_phone)
                     message_data = self.get_message_data(person_phone)  # 获取接口返回的事件数据
                     index = len(message_data)  # 获取需要写入数据的行数
 
@@ -108,7 +110,7 @@ class data:
 
                     for i in range(index):
                         if message_data[i]['emergencyId'] in cols:
-                            print("事件{0}已添加".format(message_data[i]['emergencyId']))
+                            log.write("事件{0}已添加".format(message_data[i]['emergencyId']))
                         else:
                             new_worksheet.write(count + rows_old, 0,
                                                 message_data[i]['emergencyId'])  # 追加写入数据，从count+rows_old行开始写入
@@ -126,8 +128,8 @@ class data:
                             # print("事件{0}写入成功".format(message_data[i]['emergencyId']))
                     new_workbook.save('test.xlsx')  # 保存工作簿
                     rows_new = count + rows_old  # 获取表格中已存在的数据的行数
-                    print("当前行数{}".format(rows_new))
-                    print("{0}写入数据完成{0}".format("*" * 10))
+                    log.write("当前行数{}".format(rows_new))
+                    log.write("{0}写入数据完成{0}".format("*" * 10))
             return rows_new
         except:
             workbook = xlrd.open_workbook('test.xlsx')  # 打开工作簿
@@ -146,9 +148,12 @@ class data:
         worksheet = workbook.sheet_by_name('sheet1') # 获取sheet1内容
         # 判断是否已上传，并获取字段值
         if worksheet.row_values(i)[9] == 1:
-            print("事件{0}已上传".format(worksheet.row_values(i)[0]))
+            log.write("事件{0}已上传".format(worksheet.row_values(i)[0]))
             return type, content, phone
-        else:
+        elif worksheet.row_values(i)[9] == 2:
+            log.write("{0}账号登录失败".format(worksheet.row_values(i)[0]))
+            return type, content, phone
+        elif worksheet.row_values(i)[9] == 0:
             type = worksheet.row_values(i)[3]
             content = worksheet.row_values(i)[8]
             # print("事件概述：{0}".format(content))
@@ -163,7 +168,17 @@ class data:
             new_worksheet.write(i, 9, 1)  # 将是否上传改为1
             new_workbook.save('test.xlsx')  # 保存工作簿
         except:
-            print("修改状态失败")
+            log.write("修改提交状态失败")
+
+    def tag_login_error(self,i):
+        try:
+            workbook = xlrd.open_workbook('test.xlsx')  # 打开excel
+            new_workbook = copy(workbook)  # 将xlrd对象拷贝转化为xlwt对象
+            new_worksheet = new_workbook.get_sheet(0)  # 获取第一个sheet
+            new_worksheet.write(i, 9, 2)  # 将是否上传改为2  登录失败为2
+            new_workbook.save('test.xlsx')  # 保存工作簿
+        except:
+            log.write("修改登录状态失败")
 
     #     # 读取数据
     #
@@ -221,7 +236,7 @@ class data:
         worksheet = workbook.sheet_by_name('sheet1') # 获取sheet1内容
         # 获取第i行的事件id
         id = worksheet.row_values(i)[0]
-        print("事件id：{0}".format(id))
+        log.write("事件id：{0}".format(id))
         try:
             self.delete_picture()
             url = details_url + id
@@ -231,14 +246,14 @@ class data:
             message_json = json.loads(get_json.text)
             message_data = message_json["data"]["emergency_fileList"]
             count = len(message_data)
-            print('图片张数 ：{}'.format(count))
+            log.write('图片张数 ：{}'.format(count))
             for j in range(count):
                 path = fileurl + message_data[j]['fileUrl']
-                print("图片地址：{0}".format(path))
+                log.write("图片地址：{0}".format(path))
                 urllib.request.urlretrieve(path, dir + '\\{0}.jpeg'.format(j))  # 下载图片到指定路径 dir
             return count
         except(ConnectionError):
-            print("获取图片超时")
+            log.write("获取图片超时")
 
 
     # 清空图片
@@ -262,29 +277,41 @@ class data:
         # excel表中的事件大类，对应到APP的大类code码
         if eventtype[0] == '疫情防控':
             fircode = 5
+            typelist_1 = ['']
+            typelist_2 = ['涉疫排查']
+            typelist_3 = []
+            typelist_4 = []
+            typelist_5 = []
+            typelist_6 = ['涉疫宣传', '其他', '涉疫矛盾纠纷', '涉疫隐患']
+            if eventtype[1] in typelist_1:
+                seccode = 1
+            elif eventtype[1] in typelist_2:
+                seccode = 2
+            elif eventtype[1] in typelist_3:
+                seccode = 3
+            elif eventtype[1] in typelist_4:
+                seccode = 4
+            elif eventtype[1] in typelist_5:
+                seccode = 5
+            elif eventtype[1] in typelist_6:
+                seccode = 6
         elif eventtype[0] == '治安问题':
             fircode = 2
-        elif eventtype[0] == '风险隐患':
-            fircode = 3
-        elif eventtype[0] == '信访问题':
-            fircode = 4
-        elif eventtype[0] in ['其他事件','宣传工作','矛盾纠纷']:
-            fircode = 6
-
-        # excel表中的事件小类，对应到APP的小类code码
-        if fircode <= 5 :
-            # 小类转换
-            typelist_1 = ['劳资关系', '涉黑涉恶', '国家安全', '军队退役人员群体', '情况摸底']
-            typelist_2 = ['权属纠纷', '道路交通', '涉疫排查']
-            typelist_3 = ['经济纠纷']
-            typelist_4 = ['旅游领域']
-            typelist_5 = ['消防安全', '环境卫生','道路交通安全','其他']
-            typelist_6 = ['医患关系', '涉疫宣传', '其他', '涉疫矛盾纠纷', '涉疫隐患','黄赌毒问题']
-            typelist_7 = ['物业纠纷']
-            typelist_8 = ['教育领域']
-            typelist_9 = ['小区物业管理群体']
+            typelist_1 = ['涉黑涉恶']
+            typelist_2 = ['']
+            typelist_3 = ['']
+            typelist_4 = ['']
+            typelist_5 = ['治安乱点','治安和刑事案件']
+            typelist_6 = ['黄赌毒问题']
+            typelist_7 = ['传销组织']
+            typelist_8 = ['']
+            typelist_9 = ['电信诈骗']
             typelist_10 = ['']
-            typelist_17 = ['邻里纠纷']
+            typelist_12 = ['非法集资']
+            typelist_13 = ['民爆物品、危险化学品等']
+            typelist_14 = ['校园周边秩序']
+            typelist_15 = ['人口密集场所安全']
+            typelist_16 = ['其他']
             if eventtype[1] in typelist_1:
                 seccode = 1
             elif eventtype[1] in typelist_2:
@@ -305,10 +332,125 @@ class data:
                 seccode = 9
             elif eventtype[1] in typelist_10:
                 seccode = 10
-            elif eventtype[1] in typelist_17:
-                seccode = 17
-        else:
+            elif eventtype[1] in typelist_12:
+                seccode = 12
+            elif eventtype[1] in typelist_13:
+                seccode = 13
+            elif eventtype[1] in typelist_14:
+                seccode = 14
+            elif eventtype[1] in typelist_15:
+                seccode = 15
+            elif eventtype[1] in typelist_16:
+                seccode = 16
+            else:
+                seccode = ''
+        elif eventtype[0] == '风险隐患':
+            fircode = 3
+            typelist_1 = ['国家安全', '铁路沿线安全', '道路交通安全', '消防安全', '校园周边安全']
+            typelist_2 = ['']
+            typelist_3 = ['']
+            typelist_4 = ['']
+            typelist_5 = ['环境卫生','其他']
+            if eventtype[1] in typelist_1:
+                seccode = 1
+            elif eventtype[1] in typelist_2:
+                seccode = 2
+            elif eventtype[1] in typelist_3:
+                seccode = 3
+            elif eventtype[1] in typelist_4:
+                seccode = 4
+            elif eventtype[1] in typelist_5:
+                seccode = 5
+            else:
+                seccode = ''
+        elif eventtype[0] == '信访问题':
+            fircode = 4
+            typelist_1 = ['退役军人群体']
+            typelist_2 = ['']
+            typelist_3 = ['']
+            typelist_4 = ['非法集资或民间融资群体']
+            typelist_5 = ['']
+            typelist_6 = ['']
+            typelist_7 = ['']
+            typelist_8 = ['农民工讨薪群体']
+            typelist_9 = ['其他','小区物业管理群体','房地产群体','征地拆迁补偿群体']
+            if eventtype[1] in typelist_1:
+                seccode = 1
+            elif eventtype[1] in typelist_2:
+                seccode = 2
+            elif eventtype[1] in typelist_3:
+                seccode = 3
+            elif eventtype[1] in typelist_4:
+                seccode = 4
+            elif eventtype[1] in typelist_5:
+                seccode = 5
+            elif eventtype[1] in typelist_6:
+                seccode = 6
+            elif eventtype[1] in typelist_7:
+                seccode = 7
+            elif eventtype[1] in typelist_8:
+                seccode = 8
+            elif eventtype[1] in typelist_9:
+                seccode = 9
+            else:
+                seccode = ''
+        elif eventtype[0] in ['其他事件','宣传工作','矛盾纠纷']:
+            fircode = 6
             seccode = ''
+
+        # excel表中的事件小类，对应到APP的小类code码
+        # if fircode <= 5 :
+        #     # 小类转换
+        #     typelist_1 = ['劳资关系', '涉黑涉恶', '国家安全', '军队退役人员群体', '情况摸底','铁路沿线安全','道路交通安全','消防安全','校园周边安全']
+        #     typelist_2 = ['权属纠纷', '道路交通', '涉疫排查']
+        #     typelist_3 = ['经济纠纷']
+        #     typelist_4 = ['旅游领域']
+        #     typelist_5 = ['消防安全', '环境卫生','道路交通安全','其他','治安乱点']
+        #     typelist_6 = ['医患关系', '涉疫宣传', '其他', '涉疫矛盾纠纷', '涉疫隐患','黄赌毒问题']
+        #     typelist_7 = ['物业纠纷','传销组织','']
+        #     typelist_8 = ['教育领域']
+        #     typelist_9 = ['小区物业管理群体','征地拆迁补偿群体']
+        #     typelist_10 = ['']
+        #     typelist_12 = ['民爆物品、危险化学品等']
+        #     typelist_13 = ['']
+        #     typelist_14 = ['']
+        #     typelist_15 = ['人口密集场所安全']
+        #     typelist_16 = ['']
+        #     typelist_17 = ['邻里纠纷']
+        #     if eventtype[1] in typelist_1:
+        #         seccode = 1
+        #     elif eventtype[1] in typelist_2:
+        #         seccode = 2
+        #     elif eventtype[1] in typelist_3:
+        #         seccode = 3
+        #     elif eventtype[1] in typelist_4:
+        #         seccode = 4
+        #     elif eventtype[1] in typelist_5:
+        #         seccode = 5
+        #     elif eventtype[1] in typelist_6:
+        #         seccode = 6
+        #     elif eventtype[1] in typelist_7:
+        #         seccode = 7
+        #     elif eventtype[1] in typelist_8:
+        #         seccode = 8
+        #     elif eventtype[1] in typelist_9:
+        #         seccode = 9
+        #     elif eventtype[1] in typelist_10:
+        #         seccode = 10
+        #     elif eventtype[1] in typelist_12:
+        #         seccode = 12
+        #     elif eventtype[1] in typelist_13:
+        #         seccode = 13
+        #     elif eventtype[1] in typelist_14:
+        #         seccode = 14
+        #     elif eventtype[1] in typelist_15:
+        #         seccode = 15
+        #     elif eventtype[1] in typelist_16:
+        #         seccode = 16
+        #     elif eventtype[1] in typelist_17:
+        #         seccode = 17
+        # else:
+        #     seccode = ''
 
         print('fircode :{0},seccode :{1}'.format(fircode,seccode))
         return fircode , seccode
