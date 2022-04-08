@@ -33,33 +33,6 @@ class data:
         except(Exception):
             log.write("接口调用异常")
 
-    def get_list(self):
-        message_data = self.get_message_data(citizenPhone)
-        for i in range(len(message_data)):
-            dic = message_data[i]
-            # print(dic["emergencyId"])
-            # print(dic["emergencySource"])
-            # print(dic["emergencyTypeId"])
-            # print(dic["emergencyTypeDetails"])
-            # print(dic["emergencyTitle"])
-            # print(dic["orgTreePath"])
-            # print(dic["orgTreePathDetails"])
-            # print(dic["citizenName"])
-            # print(dic["citizenPhone"])
-            # print(dic["citizenAddress"])
-            # print(dic["emergencyAddress"])
-            # print(dic["emergencyContent"])
-            # print(dic["createTime"])
-            # print(dic["handlerPeople"])
-            # print(dic["citizenUserId"])
-            # print(dic["emergencyStatus"])
-            # print(dic["emergencyStatusDesc"])
-            # print(dic["startTime"])
-            # print(dic["stopTime"])
-            # print(dic["superviseStatus"])
-            # print(dic["superviseStatusDesc"])
-            # print(dic["emergencyFileList"])
-            # print(dic["sort"], '\n\t')
 
         # # 存储数据
         # def save_data(self):
