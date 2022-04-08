@@ -8,12 +8,16 @@ import os
 from xlutils.copy import copy
 import logger
 
-citizenPhone = '' # 需上传的手机号
-fileurl = 'http://121.30.189.198:5130/'  # 线上环境地址
-#events_url = "http://121.30.189.198:5130/smart_community_information/search/emergency/1/10" # 事件列表接口地址
-events_url = "http://sqwy.wt.com:5130/smart_community_information/search/emergency/1/10"
-details_url = "http://121.30.189.198:5130/smart_community_information/emergency/" # 事件详情接口地址
+# fileurl = 'http://121.30.189.198:5130/'  # 线上环境地址
+# events_url = "http://sqwy.wt.com:5130/smart_community_information/search/emergency/1/10" # 事件列表接口
+# details_url = "http://121.30.189.198:5130/smart_community_information/emergency/" # 事件详情接口地址
+
+fileurl = 'http://111.53.13.252/admin_community/'  # 京东云线上环境地址
+events_url = "http://111.53.13.252/admin_community/smart_community_information/search/emergency/1/10" # 事件列表接口
+details_url = "http://111.53.13.252/admin_community/smart_community_information/emergency/" # 事件详情接口地址
 header = {"content-type": "application/x-www-form-urlencoded"}
+citizenPhone = '' # 需上传的手机号
+
 
 dir = r'C:\Users\Administrator\Nox_share\ImageShare\res\drawable-hdpi'  # 本地图片保存路径
 log = logger.Logger()
@@ -23,7 +27,7 @@ class data:
 
     def get_message_data(self,citizenPhone):
         try:
-            body = {"userAcceptance": 0, "userId": "3", "emergencyStatus": 2, 'citizenPhone': citizenPhone}
+            body = {"userAcceptance": 0, "userId": "3", "emergencyStatus": '', 'citizenPhone': citizenPhone, 'startDate':'2022-04-08 00:00:00' , 'endDate':'2022-04-08 23:59:59'}
             get_json = requests.post(events_url, data=body, headers=header)
             message_json = json.loads(get_json.text)
             # print(message_json)

@@ -50,7 +50,7 @@ class ReportData:
         # 点登录
         self.d.xpath('//*[@resource-id="com.wanggeyuan.zongzhi:id/login_btn"]').click()
         sleep()
-        message = self.d.toast.get_message()
+        message = self.d.toast.get_message() # 获取提示信息
         log.write(message)
         log.write("登录账号：{0}".format(username))
         self.state = 2
@@ -445,6 +445,9 @@ class ReportData:
     def submit(self):
         try:
             self.d.xpath('//*[@resource-id="com.wanggeyuan.zongzhi:id/right_text"]').click()
+            submitresult = self.d.toast.get_message()  # 获取提示信息
+            log.write(submitresult)
+            return submitresult
         except:
             log.write("未找到提交按钮")
 

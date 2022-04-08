@@ -32,8 +32,9 @@ if __name__ == '__main__':
             report.write_Event(content)  # 事件概述
             report.fill_in_Report_type(firtype, sectype)  # 选择事件类型
             report.getpicture(count)  # 选择图片
-            report.submit()  # 提交事件
-            list.tag_submit(i)
+            submitresult = report.submit() # 提交事件
+            if submitresult == '上报成功':
+                list.tag_submit(i)
             # report.logout() # 退出登录
             report.stop_app()  # 停止APP
             list.delete_picture()  # 删除图片
