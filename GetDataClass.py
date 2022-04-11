@@ -7,32 +7,41 @@ import urllib.request
 import os
 from xlutils.copy import copy
 import logger
+import time
 
-# fileurl = 'http://121.30.189.198:5130/'  # 线上环境地址
-# events_url = "http://sqwy.wt.com:5130/smart_community_information/search/emergency/1/10" # 事件列表接口
-# details_url = "http://121.30.189.198:5130/smart_community_information/emergency/" # 事件详情接口地址
 
-fileurl = 'http://111.53.13.252/admin_community/'  # 京东云线上环境地址
-events_url = "http://111.53.13.252/admin_community/smart_community_information/search/emergency/1/10" # 事件列表接口
+fileurl = 'http://111.53.13.252/'  # 京东云线上环境地址
+events_url = "http://111.53.13.252/admin_community/smart_community_information/search/emergency/{0}/10" # 事件列表接口
 details_url = "http://111.53.13.252/admin_community/smart_community_information/emergency/" # 事件详情接口地址
 header = {"content-type": "application/x-www-form-urlencoded"}
 citizenPhone = '' # 需上传的手机号
 
 
-dir = r'C:\Users\Administrator\Nox_share\ImageShare\res\drawable-hdpi'  # 本地图片保存路径
+dir1 = r'C:\Users\Administrator\Nox_share\ImageShare\res\drawable-hdpi'  # 事发时图片保存路径
+dir2 = r'C:\Users\Administrator\Nox_share\ImageShare\res\mipmap-xhdpi-v4'  # 处置后图片保存路径
+
 log = logger.Logger()
 
 
 class data:
 
-    def get_message_data(self,citizenPhone):
+
+    def get_message_data(self, citizenPhone):
         try:
-            body = {"userAcceptance": 0, "userId": "3", "emergencyStatus": '', 'citizenPhone': citizenPhone, 'startDate':'2022-04-08 00:00:00' , 'endDate':'2022-04-08 23:59:59'}
-            get_json = requests.post(events_url, data=body, headers=header)
+            body = {"userAcceptance": 0, "userId": "3", "emergencyStatus": '2', 'citizenPhone': citizenPhone,
+                    'startDate': '2022-01-01 00:00:00', 'endDate': '2022-03-31 23:59:59'}
+            get_json = requests.post(events_url.format(1), data=body, headers=header)
             message_json = json.loads(get_json.text)
             # print(message_json)
             message_data = message_json["data"]["resultList"]
-            # print(message_data)
+            pages = message_json["data"]["totalPages"]
+            if pages > 1:
+                for i in range(2,pages+1):
+                    next_pages = requests.post(events_url.format(i), data=body, headers=header)
+                    next_pages_json = json.loads(next_pages.text)
+                    # print(next_pages_json)
+                    next_pages_data = next_pages_json["data"]["resultList"]
+                    message_data = next_pages_data + message_data
             return message_data
         except(Exception):
             log.write("接口调用异常")
@@ -91,7 +100,7 @@ class data:
                         else:
                             new_worksheet.write(count + rows_old, 0,
                                                 message_data[i]['emergencyId'])  # 追加写入数据，从count+rows_old行开始写入
-                            new_worksheet.write(count + rows_old, 1, message_data[i]['emergencySource'])
+                            new_worksheet.write(count + rows_old, 1, message_data[i]['createTime'])
                             new_worksheet.write(count + rows_old, 2, message_data[i]['emergencyTypeId'])
                             new_worksheet.write(count + rows_old, 3,
                                                 message_data[i]['emergencyTypeCodeDesc'])
@@ -101,6 +110,7 @@ class data:
                             new_worksheet.write(count + rows_old, 7, message_data[i]['citizenAddress'])
                             new_worksheet.write(count + rows_old, 8, message_data[i]['emergencyContent'])
                             new_worksheet.write(count + rows_old, 9, 0)
+                            new_worksheet.write(count + rows_old, 10, time.strftime("%Y-%m-%d, %H:%M:%S"))
                             count += 1
                             # print("事件{0}写入成功".format(message_data[i]['emergencyId']))
                     new_workbook.save('test.xlsx')  # 保存工作簿
@@ -128,7 +138,7 @@ class data:
             log.write("事件{0}已上传".format(worksheet.row_values(i)[0]))
             return type, content, phone
         elif worksheet.row_values(i)[9] == 2:
-            log.write("{0}账号登录失败".format(worksheet.row_values(i)[0]))
+            log.write("{0}账号登录失败".format(worksheet.row_values(i)[6]))
             return type, content, phone
         elif worksheet.row_values(i)[9] == 0:
             type = worksheet.row_values(i)[3]
@@ -136,26 +146,46 @@ class data:
             # print("事件概述：{0}".format(content))
             phone = worksheet.row_values(i)[6]
             return type, content, phone
+        elif worksheet.row_values(i)[9] == 3:
+            log.write("{0}数据异常".format(worksheet.row_values(i)[0]))
+            return type, content, phone
 
+    # 标记上传成功
     def tag_submit(self,i):
         try:
             workbook = xlrd.open_workbook('test.xlsx')  # 打开excel
             new_workbook = copy(workbook)  # 将xlrd对象拷贝转化为xlwt对象
             new_worksheet = new_workbook.get_sheet(0)  # 获取第一个sheet
-            new_worksheet.write(i, 9, 1)  # 将是否上传改为1
+            new_worksheet.write(i, 9, 1)  # 上传成功为1
+            new_worksheet.write(i, 10, time.strftime("%Y-%m-%d, %H:%M:%S"))  #   标记时间
             new_workbook.save('test.xlsx')  # 保存工作簿
         except:
-            log.write("修改提交状态失败")
+            log.write("修改状态失败")
 
+    # 标记登录失败
     def tag_login_error(self,i):
         try:
             workbook = xlrd.open_workbook('test.xlsx')  # 打开excel
             new_workbook = copy(workbook)  # 将xlrd对象拷贝转化为xlwt对象
             new_worksheet = new_workbook.get_sheet(0)  # 获取第一个sheet
-            new_worksheet.write(i, 9, 2)  # 将是否上传改为2  登录失败为2
+            new_worksheet.write(i, 9, 2)  # 登录失败为2
+            new_worksheet.write(i, 10, time.strftime("%Y-%m-%d, %H:%M:%S"))  #   标记时间
             new_workbook.save('test.xlsx')  # 保存工作簿
         except:
-            log.write("修改登录状态失败")
+            log.write("修改状态失败")
+
+    # 标记数据异常
+    def tag_data_error(self,i):
+        try:
+            workbook = xlrd.open_workbook('test.xlsx')  # 打开excel
+            new_workbook = copy(workbook)  # 将xlrd对象拷贝转化为xlwt对象
+            new_worksheet = new_workbook.get_sheet(0)  # 获取第一个sheet
+            new_worksheet.write(i, 9, 3)  #   数据异常为3
+            new_worksheet.write(i, 10, time.strftime("%Y-%m-%d, %H:%M:%S"))  #   标记时间
+
+            new_workbook.save('test.xlsx')  # 保存工作簿
+        except:
+            log.write("修改状态失败")
 
     #     # 读取数据
     #
@@ -207,7 +237,7 @@ class data:
         return firsttype, secondtype
 
 
-    # 获取图片张数，并下载图片
+    # 获取事发时图片张数，并下载图片
     def picture_count(self,i):
         workbook = xlrd.open_workbook('test.xlsx') # 打开excel
         worksheet = workbook.sheet_by_name('sheet1') # 获取sheet1内容
@@ -221,14 +251,43 @@ class data:
             header = {"content-type": "application/x-www-form-urlencoded"}
             get_json = requests.get(url=url, headers=header)
             message_json = json.loads(get_json.text)
-            message_data = message_json["data"]["emergency_fileList"]
-            count = len(message_data)
-            log.write('图片张数 ：{}'.format(count))
-            for j in range(count):
-                path = fileurl + message_data[j]['fileUrl']
-                log.write("图片地址：{0}".format(path))
-                urllib.request.urlretrieve(path, dir + '\\{0}.jpeg'.format(j))  # 下载图片到指定路径 dir
-            return count
+
+
+            # 下载事发时图片
+            shifa = message_json["data"]["emergency_fileList"]
+            shifacount = len(shifa)
+            log.write('事发时图片张数 ：{}'.format(shifacount))
+            # 判断数组中是否包含图片地址
+            for t in range(shifacount):
+                shifafiles = message_json["data"]["emergency_fileList"][t]["fileUrl"]
+                if shifafiles:
+                    shifapath = fileurl + shifafiles
+                    log.write("事发时图片地址：{0}".format(shifapath))
+                    urllib.request.urlretrieve(shifapath, dir1 + '\\{0}.jpeg'.format(t))  # 下载图片到指定路径 dir
+                else:
+                    shifacount = 0
+                    log.write("事发时图片地址为0")
+
+
+
+            # 下载处置后图片
+            chuzhi = message_json["data"]["emergency_results_root"]["emergency_results_fileList"]
+            chuzhicount = len(chuzhi)
+            log.write('处置后图片张数 ：{}'.format(chuzhicount))
+            # 判断数组中是否包含图片地址
+            for j in range(chuzhicount):
+                chuzhifiles = message_json["data"]["emergency_results_root"]["emergency_results_fileList"][j]["fileUrl"]
+                if chuzhifiles:
+                    chuzhipath = fileurl + chuzhifiles
+                    log.write("处置后图片地址：{0}".format(chuzhipath))
+                    urllib.request.urlretrieve(chuzhipath, dir2 + '\\{0}.jpeg'.format(j))  # 下载图片到指定路径 dir
+                else:
+                    chuzhicount = 0
+                    log.write("处置后图片地址为0")
+
+
+
+            return shifacount , chuzhicount
         except(ConnectionError):
             log.write("获取图片超时")
 
@@ -237,7 +296,13 @@ class data:
     def delete_picture(self):
         # 指定路径
 
-        for root, dirs, files in os.walk(dir):
+        for root, dirs, files in os.walk(dir1):
+            for name in files:
+                if name.endswith(".jpeg"):  # 填写规则
+                    os.remove(os.path.join(root, name))
+                    print("Delete File: " + os.path.join(root, name))
+
+        for root, dirs, files in os.walk(dir2):
             for name in files:
                 if name.endswith(".jpeg"):  # 填写规则
                     os.remove(os.path.join(root, name))
@@ -439,7 +504,7 @@ if __name__ == '__main__':
     data().write_excel_xls_append()
     # data().read_excel()
     # data().read_data(2)
-    # data().picture_count(2)
+    # data().picture_count(262)
     #data().delete_picture()
     # data().read_data(2)
     # data().get_eventtype(i)

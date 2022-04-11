@@ -72,7 +72,7 @@ class ReportData:
     # 打开自行处置
     def fill_in_disposal(self):
         try:
-            self.d.xpath('//*[@resource-id="com.wanggeyuan.zongzhi:id/fb_one"]').click()
+            self.d.xpath('//*[@resource-id="com.wanggeyuan.zongzhi:id/fb_two"]').click()
             sleep()
             self.state = 4
         except:
@@ -121,25 +121,49 @@ class ReportData:
         except:
             log.write("未找到确定按钮")
 
-    # 上传图片
-    def getpicture(self,num):
+    # 上传事发时 处置后图片
+    def getpicture(self,num1,num2):
         try:
-            self.d.xpath('//*[@resource-id="com.wanggeyuan.zongzhi:id/shijian_photo"]').click()
-            sleep()
-            self.d.xpath('//*[@text="相册"]').click()
-            sleep()
-            self.d.xpath('//*[@resource-id="com.android.packageinstaller:id/permission_allow_button"]').click()
-            sleep()
-            self.d.xpath(
-                '//*[@resource-id="com.wanggeyuan.zongzhi:id/grid_view_album_select"]/android.widget.FrameLayout[1]/android.widget.ImageView[1]').click()
-            sleep()
-            for i in range(1, num + 1):
-                self.d.xpath((
-                                 '//*[@resource-id="com.wanggeyuan.zongzhi:id/grid_view_image_select"]/android.widget.FrameLayout[{0}]/android.widget.ImageView[1]').format(
-                    i)).click()
-            sleep()
-            self.d.xpath('//android.support.v7.widget.LinearLayoutCompat').click()
-            log.write("上传图片")
+            if num1 > 0:
+                self.d.xpath('//*[@resource-id="com.wanggeyuan.zongzhi:id/shijian_photo"]').click()
+                sleep()
+                self.d.xpath('//*[@text="相册"]').click()
+                sleep()
+                self.d.xpath('//*[@resource-id="com.android.packageinstaller:id/permission_allow_button"]').click()
+                sleep()
+                self.d.xpath('//*[@text="drawable-hdpi"]').click()
+                sleep()
+                for i in range(1, num1 + 1):
+                    self.d.xpath((
+                        '//*[@resource-id="com.wanggeyuan.zongzhi:id/grid_view_image_select"]/android.widget.FrameLayout[{0}]/android.widget.ImageView[1]').format(
+                        i)).click()
+                sleep()
+                self.d.xpath('//android.support.v7.widget.LinearLayoutCompat').click()
+                # 事发时图片
+                self.d.xpath('//*[@resource-id="com.wanggeyuan.zongzhi:id/tv_shifashi"]').click()
+            else:
+                log.write("无需上传事发时图片")
+
+
+
+            if num2 > 0:
+                self.d.xpath('//*[@resource-id="com.wanggeyuan.zongzhi:id/shijian_photo"]').click()
+                sleep()
+                self.d.xpath('//*[@text="相册"]').click()
+                sleep()
+                self.d.xpath('//*[@text="mipmap-xhdpi-v4"]').click()
+                sleep()
+                for i in range(1, num2 + 1):
+                    self.d.xpath((
+                        '//*[@resource-id="com.wanggeyuan.zongzhi:id/grid_view_image_select"]/android.widget.FrameLayout[{0}]/android.widget.ImageView[1]').format(
+                        i)).click()
+                sleep()
+                self.d.xpath('//android.support.v7.widget.LinearLayoutCompat').click()
+                # 处置后图片
+                self.d.xpath('//*[@resource-id="com.wanggeyuan.zongzhi:id/tv_chuzhihou"]').click()
+            else:
+                log.write("无需上传处置后图片")
+
             sleep()
         except:
             log.write("未获取到目标图片")
