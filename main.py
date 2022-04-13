@@ -10,7 +10,7 @@ if __name__ == '__main__':
     nrows = list.write_excel_xls_append()
     print(nrows)
 
-    for i in range(41,nrows):
+    for i in range(90,nrows):
         type, content, phone = list.read_data(i) # 获取数据
         if ((type is None)&(content is None)&(phone is None)): # 返回值为空则跳出循环
             continue
@@ -32,8 +32,8 @@ if __name__ == '__main__':
             report.goto_disposal()
             report.fill_in_disposal()
             report.fill_in_location()
-            report.write_Event(content)  # 事件概述
             report.fill_in_Report_type(firtype, sectype)  # 选择事件类型
+            report.write_Event(content)  # 事件概述
             report.getpicture(count1,count2)  # 选择图片
             submitresult = report.submit() # 提交事件
             if submitresult == '上报成功':

@@ -23,19 +23,25 @@ class ReportData:
 
     # 打开相册
     def open_album(self):
-        self.d.app_start('com.android.gallery3d', 'com.android.gallery3d.app.GalleryActivity')
-        self.d.click(0.485, 0.677)
-        self.d.app_stop('com.android.gallery3d')
-        log.write("启动相册")
-        self.state = 0
+        try:
+            self.d.app_start('com.android.gallery3d', 'com.android.gallery3d.app.GalleryActivity')
+            self.d.click(0.485, 0.677)
+            self.d.app_stop('com.android.gallery3d')
+            log.write("启动相册")
+            self.state = 0
+        except:
+            log.write('启动相册失败')
 
 
     # 打开APP，定位在登录页
     def open_app(self):
-        self.d.app_stop('com.wanggeyuan.zongzhi')
-        self.d.app_start('com.wanggeyuan.zongzhi', 'com.wanggeyuan.zongzhi.main.ui.activity.LoginActivity')
-        log.write("启动APP")
-        self.state = 1
+        try:
+            self.d.app_stop('com.wanggeyuan.zongzhi')
+            self.d.app_start('com.wanggeyuan.zongzhi', 'com.wanggeyuan.zongzhi.main.ui.activity.LoginActivity')
+            log.write("启动APP")
+            self.state = 1
+        except:
+            log.write('启动APP失败')
 
     # 登陆
     def login(self,username,password):  # ,username,password
@@ -91,15 +97,18 @@ class ReportData:
 
     # 开启定位权限
     def open_location(self):
-        self.d.app_start('com.android.settings', 'com.android.settings.Settings$ManageApplicationsActivity')
-        sleep()
-        self.d.click(0.081, 0.703)
-        sleep()
-        self.d.click(0.121, 0.405)
-        sleep()
-        self.d.click(0.909, 0.204)
-        sleep()
-        self.d.app_stop('com.android.settings')
+        try:
+            self.d.app_start('com.android.settings', 'com.android.settings.Settings$ManageApplicationsActivity')
+            sleep()
+            self.d.click(0.081, 0.703)
+            sleep()
+            self.d.click(0.121, 0.405)
+            sleep()
+            self.d.click(0.909, 0.204)
+            sleep()
+            self.d.app_stop('com.android.settings')
+        except:
+            log.write('开启定位权限失败')
 
 
     # 确定位置

@@ -29,7 +29,7 @@ class data:
     def get_message_data(self, citizenPhone):
         try:
             body = {"userAcceptance": 0, "userId": "3", "emergencyStatus": '2', 'citizenPhone': citizenPhone,
-                    'startDate': '2022-01-01 00:00:00', 'endDate': '2022-03-31 23:59:59'}
+                    'startDate': '2022-01-01 00:00:00', 'endDate': '2022-04-12 23:59:59'}
             get_json = requests.post(events_url.format(1), data=body, headers=header)
             message_json = json.loads(get_json.text)
             # print(message_json)
@@ -247,7 +247,7 @@ class data:
         try:
             self.delete_picture()
             url = details_url + id
-            print(url)
+            log.write(url)
             header = {"content-type": "application/x-www-form-urlencoded"}
             get_json = requests.get(url=url, headers=header)
             message_json = json.loads(get_json.text)
@@ -288,7 +288,7 @@ class data:
 
 
             return shifacount , chuzhicount
-        except(ConnectionError):
+        except:
             log.write("获取图片超时")
 
 
@@ -504,7 +504,7 @@ if __name__ == '__main__':
     data().write_excel_xls_append()
     # data().read_excel()
     # data().read_data(2)
-    # data().picture_count(262)
+    data().picture_count(82)
     #data().delete_picture()
     # data().read_data(2)
     # data().get_eventtype(i)
