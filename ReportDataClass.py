@@ -143,6 +143,8 @@ class ReportData:
                 self.d.xpath('//*[@text="drawable-hdpi"]').click()
                 sleep()
                 for i in range(1, num1 + 1):
+                    if i > 5: # 张数大于5时，只上传前5张
+                        break
                     self.d.xpath((
                         '//*[@resource-id="com.wanggeyuan.zongzhi:id/grid_view_image_select"]/android.widget.FrameLayout[{0}]/android.widget.ImageView[1]').format(
                         i)).click()
