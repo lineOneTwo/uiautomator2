@@ -128,7 +128,7 @@ class ReportData:
             self.d.click(0.163, 0.561)
             self.state = 6
         except:
-            log.write("未找到确定按钮")
+            log.write("选择位置失败")
 
     # 上传事发时 处置后图片
     def getpicture(self,num1,num2):
