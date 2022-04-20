@@ -33,7 +33,7 @@ if __name__ == '__main__':
             report.fill_in_disposal()  # 打开自行处置
             report.fill_in_Report_type(firtype, sectype)  # 选择事件类型
             report.fill_in_location()  # 选择位置
-            report.fill_in_degree_emergency(3)
+            # report.fill_in_degree_emergency(3)
             report.write_Event(content)  # 事件概述
             report.getpicture(count1, count2)  # 选择图片
             submitresult = report.submit()  # 提交事件

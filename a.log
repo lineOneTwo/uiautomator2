@@ -122317,3 +122317,66 @@ http://111.53.13.252/admin_community/smart_community_information/emergency/84171
 **********写入数据完成**********
 13934808071
 当前行数804
+819
+
+
+事件类型：('疫情防控', '涉疫排查')
+
+
+fircode :5,seccode :2
+
+
+Delete File: C:\Users\admin\Nox_share\ImageShare\res\drawable-hdpi\0.jpeg
+
+
+Delete File: C:\Users\admin\Nox_share\ImageShare\res\drawable-hdpi\1.jpeg
+
+
+Delete File: C:\Users\admin\Nox_share\ImageShare\res\mipmap-xhdpi-v4\0.jpeg
+
+
+Delete File: C:\Users\admin\Nox_share\ImageShare\res\drawable-hdpi\0.jpeg
+
+
+Delete File: C:\Users\admin\Nox_share\ImageShare\res\mipmap-xhdpi-v4\0.jpeg
+
+
+事件类型：('风险隐患', '其他')
+
+
+fircode :3,seccode :5
+
+
+**********开始操作APP**********
+当前阶段10
+13934823624
+事件id：1616715992237
+http://111.53.13.252/admin_community/smart_community_information/emergency/1616715992237
+事发时图片张数 ：1
+事发时图片地址：http://111.53.13.252/group1/M00/00/4E/wKhlB2JeJ5OAX_2ZAJUlsa84U0U406.jpg
+处置后图片张数 ：1
+处置后图片地址：http://111.53.13.252/group2/M00/00/4E/wKhlCGJeJ_-Ae_p5AJUlsa84U0U197.jpg
+清除APP缓存
+启动相册
+启动APP
+当前网络名称:WIFI
+登录账号：18803523094
+上报成功
+事件id：3722543368323
+http://111.53.13.252/admin_community/smart_community_information/emergency/3722543368323
+事发时图片张数 ：1
+事发时图片地址：http://111.53.13.252/group3/M00/00/51/wKhlCWJeb1SAXxB4AAM1jlIpDMw18.jpeg
+获取图片超时
+Traceback (most recent call last):
+
+  File "C:/Users/admin/PycharmProjects/uiautomator2/main.py", line 18, in <module>
+
+    
+count1, count2 = list.picture_count(i)
+
+
+TypeError
+: 
+cannot unpack non-iterable NoneType object
+
+
