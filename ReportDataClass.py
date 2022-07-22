@@ -4,6 +4,7 @@ import time
 from GetDataClass import *
 from GetDataClass import *
 
+
 def sleep():
     time.sleep(2)
 
@@ -20,7 +21,6 @@ class ReportData:
         self.d.app_clear('com.wanggeyuan.zongzhi')
         log.write("清除APP缓存")
 
-
     # 打开相册
     def open_album(self):
         try:
@@ -31,7 +31,6 @@ class ReportData:
             self.state = 0
         except:
             log.write('启动相册失败')
-
 
     # 打开APP，定位在登录页
     def open_app(self):
@@ -44,7 +43,7 @@ class ReportData:
             log.write('启动APP失败')
 
     # 登陆
-    def login(self,username,password):  # ,username,password
+    def login(self, username, password):  # ,username,password
         # 用户名
         self.d(resourceId="com.wanggeyuan.zongzhi:id/username_et").click()
         sleep()
@@ -56,13 +55,11 @@ class ReportData:
         # 点登录
         self.d.xpath('//*[@resource-id="com.wanggeyuan.zongzhi:id/login_btn"]').click()
         sleep()
-        message = self.d.toast.get_message() # 获取提示信息
+        message = self.d.toast.get_message()  # 获取提示信息
         log.write(message)
         log.write("登录账号：{0}".format(username))
         self.state = 2
         return message
-
-
 
     # 进入处置页面
     def goto_disposal(self):
@@ -73,8 +70,6 @@ class ReportData:
         except:
             log.write('未找到加号按钮')
 
-
-
     # 打开自行处置
     def fill_in_disposal(self):
         try:
@@ -83,7 +78,6 @@ class ReportData:
             self.state = 4
         except:
             log.write('未找到指派按钮')
-
 
     # 填写事件描述
     def write_Event(self, str):
@@ -110,7 +104,6 @@ class ReportData:
         except:
             log.write('开启定位权限失败')
 
-
     # 确定位置
     def fill_in_location(self):
         try:
@@ -131,7 +124,7 @@ class ReportData:
             log.write("选择位置失败")
 
     # 上传事发时 处置后图片
-    def getpicture(self,num1,num2):
+    def getpicture(self, num1, num2):
         try:
             if num1 > 0:
                 self.d.xpath('//*[@resource-id="com.wanggeyuan.zongzhi:id/shijian_photo"]').click()
@@ -143,7 +136,7 @@ class ReportData:
                 self.d.xpath('//*[@text="drawable-hdpi"]').click()
                 sleep()
                 for i in range(1, num1 + 1):
-                    if i > 5: # 张数大于5时，只上传前5张
+                    if i > 5:  # 张数大于5时，只上传前5张
                         break
                     self.d.xpath((
                         '//*[@resource-id="com.wanggeyuan.zongzhi:id/grid_view_image_select"]/android.widget.FrameLayout[{0}]/android.widget.ImageView[1]').format(
@@ -154,8 +147,6 @@ class ReportData:
                 self.d.xpath('//*[@resource-id="com.wanggeyuan.zongzhi:id/tv_shifashi"]').click()
             else:
                 log.write("无需上传事发时图片")
-
-
 
             if num2 > 0:
                 self.d.xpath('//*[@resource-id="com.wanggeyuan.zongzhi:id/shijian_photo"]').click()
@@ -179,30 +170,33 @@ class ReportData:
         except:
             log.write("未获取到目标图片")
 
-
     # 确定紧急程度类型
     # setid=1:一般，2：紧急；3：重大，4：突发，5：疑难复杂
     def fill_in_degree_emergency(self, setId):
         self.d.xpath('//*[@resource-id="com.wanggeyuan.zongzhi:id/shangbao_chengduBtn"]').click()
         sleep()
         if setId == 1:
-            self.d.xpath('//*[@resource-id="com.wanggeyuan.zongzhi:id/md_contentRecyclerView"]/android.widget.LinearLayout[1]').click()
+            self.d.xpath(
+                '//*[@resource-id="com.wanggeyuan.zongzhi:id/md_contentRecyclerView"]/android.widget.LinearLayout[1]').click()
             sleep()
         elif setId == 2:
-            self.d.xpath('//*[@resource-id="com.wanggeyuan.zongzhi:id/md_contentRecyclerView"]/android.widget.LinearLayout[2]').click()
+            self.d.xpath(
+                '//*[@resource-id="com.wanggeyuan.zongzhi:id/md_contentRecyclerView"]/android.widget.LinearLayout[2]').click()
             sleep()
         elif setId == 3:
-            self.d.xpath('//*[@resource-id="com.wanggeyuan.zongzhi:id/md_contentRecyclerView"]/android.widget.LinearLayout[3]').click()
+            self.d.xpath(
+                '//*[@resource-id="com.wanggeyuan.zongzhi:id/md_contentRecyclerView"]/android.widget.LinearLayout[3]').click()
             sleep()
         elif setId == 4:
-            self.d.xpath('//*[@resource-id="com.wanggeyuan.zongzhi:id/md_contentRecyclerView"]/android.widget.LinearLayout[4]').click()
+            self.d.xpath(
+                '//*[@resource-id="com.wanggeyuan.zongzhi:id/md_contentRecyclerView"]/android.widget.LinearLayout[4]').click()
             sleep()
         elif setId == 5:
-            self.d.xpath('//*[@resource-id="com.wanggeyuan.zongzhi:id/md_contentRecyclerView"]/android.widget.LinearLayout[5]').click()
+            self.d.xpath(
+                '//*[@resource-id="com.wanggeyuan.zongzhi:id/md_contentRecyclerView"]/android.widget.LinearLayout[5]').click()
             sleep()
 
         self.state = 7
-
 
     # 填写上报类型
     # 1:矛盾纠纷，2：治安问题；3：风险隐患，4：利益群体信访诉求；5：其他
@@ -504,6 +498,7 @@ class ReportData:
     def stop_app(self):
         self.d.app_stop("com.wanggeyuan.zongzhi")
         self.state = 10
+
 
 if __name__ == '__main__':
     rep = ReportData()
