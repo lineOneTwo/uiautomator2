@@ -28,10 +28,10 @@ class data:
     def get_message_data(self, citizenPhone):
         try:
             body = {"userAcceptance": 0, "userId": "3", "emergencyStatus": '2', 'citizenPhone': citizenPhone,
-                    'startDate': '2022-01-01 00:00:00', 'endDate': '2022-07-24 23:59:59'}
+                    'startDate': '2022-01-01 00:00:00', 'endDate': '2022-08-01 23:59:59'}
             get_json = requests.post(events_url.format(1), data=body, headers=header)
             message_json = json.loads(get_json.text)
-            # print(message_json)
+            print(message_json)
             message_data = message_json["data"]["resultList"]
             pages = message_json["data"]["totalPages"]
             if pages > 1:
@@ -425,7 +425,7 @@ class data:
                 seccode = 9
             else:
                 seccode = ''
-        elif eventtype[0] in ['其他事件', '宣传工作', '矛盾纠纷']:
+        elif eventtype[0] in ['其他事件', '宣传工作', '矛盾纠纷', '群众诉求']:
             fircode = 6
             seccode = ''
 

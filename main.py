@@ -4,9 +4,12 @@ import logger
 
 if __name__ == '__main__':
 
+    # 申请一个日志对象
     log = logger.Logger()
+    # 申请一个数据对象对数据进行操作
     list = dt()
     # list.get_list()
+    # 追加数据
     nrows = list.write_excel_xls_append()
     print(nrows)
 
