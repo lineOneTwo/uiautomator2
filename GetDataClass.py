@@ -27,13 +27,16 @@ class data:
 
     def get_message_data(self, citizenPhone):
         try:
-            body = {"userAcceptance": 0, "userId": "3", "emergencyStatus": '2', 'citizenPhone': citizenPhone,
+            body = {"userAcceptance": 0, "userId": "315", "pageNum": "1", "count": "10", "emergencyStatus": '2',
+                    'citizenPhone': citizenPhone, "orgId": "100", "emergencyTypeOneId": "", "emergencyTypeTwoId": "",
+                    "orgSubsetCode": "", "citizenName": "", "superviseStatus": "", "ifThisOrg": "",
                     'startDate': '2022-01-01 00:00:00', 'endDate': '2022-08-01 23:59:59'}
-            get_json = requests.post(events_url.format(1), data=body, headers=header)
+            get_json = requests.post(events_url.format(1), data=body, headers=header)  # 获取第一页的数据
             message_json = json.loads(get_json.text)
             print(message_json)
             message_data = message_json["data"]["resultList"]
             pages = message_json["data"]["totalPages"]
+
             if pages > 1:
                 for i in range(2, pages + 1):
                     next_pages = requests.post(events_url.format(i), data=body, headers=header)
@@ -76,6 +79,8 @@ class data:
             rows_new = ''  # 行数
             for i in range(len(sheetName)):
                 personsheet = personbook.sheet_by_name(sheetName[i])  # 获取总表
+                print("第{0}个sheet，{1}".format(i, sheetName[i]))
+
                 rows_old = personsheet.nrows  # 获取表格中已存在的数据的行数
                 for i in range(2, rows_old):  # 从第二行开始
                     person_phone = personsheet.cell_value(i, 2)  # 获取指定单元格数据

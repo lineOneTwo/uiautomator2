@@ -13,7 +13,7 @@ if __name__ == '__main__':
     nrows = list.write_excel_xls_append()
     print(nrows)
 
-    for i in range(2883, nrows):
+    for i in range(3003, nrows):
         type, content, phone = list.read_data(i)  # 获取数据
         if (type is None) & (content is None) & (phone is None):  # 返回值为空则跳出循环
             continue
