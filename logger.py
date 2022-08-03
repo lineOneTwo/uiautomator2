@@ -17,5 +17,3 @@ class Logger(object):
 sys.stdout = Logger('a.log', sys.stdout)
 sys.stderr = Logger('a.log', sys.stderr)  # redirect std err, if necessary
 
-# now it works
-# print('print something')

@@ -12,6 +12,7 @@ def sleep():
 class ReportData:
     state = 0
 
+    # 连接模拟器
     def __init__(self):
         # self.d = u2.connect("emulator-5554")
         self.d = u2.connect("127.0.0.1:62001")
@@ -135,8 +136,8 @@ class ReportData:
                 sleep()
                 self.d.xpath('//*[@text="drawable-hdpi"]').click()
                 sleep()
-                for i in range(1, num1 + 1):
-                    if i > 5:  # 张数大于5时，只上传前5张
+                for i in range(1, num1 + 1):  # 图片路径的数组下标从1开始
+                    if i > 5:  # 由于app最多支持上传5张图片，下载到图片张数大于5时，只上传前5张
                         break
                     self.d.xpath((
                         '//*[@resource-id="com.wanggeyuan.zongzhi:id/grid_view_image_select"]/android.widget.FrameLayout[{0}]/android.widget.ImageView[1]').format(

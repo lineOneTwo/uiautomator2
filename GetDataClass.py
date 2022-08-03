@@ -25,18 +25,18 @@ log = logger.Logger()
 
 class data:
 
-    def get_message_data(self, citizenPhone):
+    def get_message_data(self, citizenPhone):  # 爬取需要上报的事件
         try:
             body = {"userAcceptance": 0, "userId": "315", "pageNum": "1", "count": "10", "emergencyStatus": '2',
                     'citizenPhone': citizenPhone, "orgId": "100", "emergencyTypeOneId": "", "emergencyTypeTwoId": "",
                     "orgSubsetCode": "", "citizenName": "", "superviseStatus": "", "ifThisOrg": "",
                     'startDate': '2022-01-01 00:00:00', 'endDate': '2022-08-01 23:59:59'}
-            get_json = requests.post(events_url.format(1), data=body, headers=header)  # 获取第一页的数据
+            get_json = requests.post(events_url.format(1), data=body, headers=header)  # 默认获取第一页的数据
             message_json = json.loads(get_json.text)
             print(message_json)
             message_data = message_json["data"]["resultList"]
             pages = message_json["data"]["totalPages"]
-
+            # 总页数大于1时，爬取其他页，并将第一页的数据与下一页的数据拼接
             if pages > 1:
                 for i in range(2, pages + 1):
                     next_pages = requests.post(events_url.format(i), data=body, headers=header)
@@ -85,12 +85,12 @@ class data:
                 for i in range(2, rows_old):  # 从第二行开始
                     person_phone = personsheet.cell_value(i, 2)  # 获取指定单元格数据
                     log.write(person_phone)
-                    message_data = self.get_message_data(person_phone)  # 获取接口返回的事件数据
+                    message_data = self.get_message_data(person_phone)  # 调用获取事件数据的方法
                     index = len(message_data)  # 获取需要写入数据的行数
 
                     workbook = xlrd.open_workbook('test.xlsx')  # 打开工作簿
                     worksheet = workbook.sheet_by_name('sheet1')  # 获取工作簿中的sheet1
-                    cols = worksheet.col_values(0, 1)  # 获取第一列内容，从第二行开始
+                    cols = worksheet.col_values(0, 1)  # 获取第一列即事件id，从第二行开始
                     rows_old = worksheet.nrows  # 获取表格中已存在的数据的行数
 
                     new_workbook = copy(workbook)  # 将xlrd对象拷贝转化为xlwt对象
@@ -98,12 +98,12 @@ class data:
                     count = 0  # 追加条数
 
                     for i in range(index):
-                        if message_data[i]['emergencyId'] in cols:
+                        if message_data[i]['emergencyId'] in cols:  # 爬取数据中的事件id在test.xlsx文件中已存在， 则不需要追加数据
                             log.write("事件{0}已添加".format(message_data[i]['emergencyId']))
                         else:
                             new_worksheet.write(count + rows_old, 0,
-                                                message_data[i]['emergencyId'])  # 追加写入数据，从count+rows_old行开始写入
-                            new_worksheet.write(count + rows_old, 1, message_data[i]['createTime'])
+                                                message_data[i]['emergencyId'])  # 追加写入数据，从count+rows_old行开始写入，事件id写在第一列
+                            new_worksheet.write(count + rows_old, 1, message_data[i]['createTime'])  # 创建时间写在第二列
                             new_worksheet.write(count + rows_old, 2, message_data[i]['emergencyTypeId'])
                             new_worksheet.write(count + rows_old, 3,
                                                 message_data[i]['emergencyTypeCodeDesc'])
@@ -112,22 +112,22 @@ class data:
                             new_worksheet.write(count + rows_old, 6, message_data[i]['citizenPhone'])
                             new_worksheet.write(count + rows_old, 7, message_data[i]['citizenAddress'])
                             new_worksheet.write(count + rows_old, 8, message_data[i]['emergencyContent'])
-                            new_worksheet.write(count + rows_old, 9, 0)
+                            new_worksheet.write(count + rows_old, 9, 0)  # 事件写入后的初始状态为0
                             new_worksheet.write(count + rows_old, 10, time.strftime("%Y-%m-%d, %H:%M:%S"))
-                            count += 1
-                            # print("事件{0}写入成功".format(message_data[i]['emergencyId']))
+                            count += 1  # 新存入事件的条数
                     new_workbook.save('test.xlsx')  # 保存工作簿
-                    rows_new = count + rows_old  # 获取表格中已存在的数据的行数
+                    rows_new = count + rows_old  # 获取表格中已存入数据最新的行数
                     log.write("当前行数{}".format(rows_new))
                     log.write("{0}写入数据完成{0}".format("*" * 10))
             return rows_new
-        except:
+        except:  # 追加代码失败后，返回当前文档的行数
             workbook = xlrd.open_workbook('test.xlsx')  # 打开工作簿
             worksheet = workbook.sheet_by_name('sheet1')  # 获取工作簿中的sheet1
             rows_new = worksheet.nrows  # 获取表格中已存在的数据的行数
             return rows_new
 
-    # 读取数据
+            # 读取数据
+
     def read_data(self, i):
         type = None
         content = None
@@ -183,7 +183,6 @@ class data:
             new_worksheet = new_workbook.get_sheet(0)  # 获取第一个sheet
             new_worksheet.write(i, 9, 3)  # 数据异常为3
             new_worksheet.write(i, 10, time.strftime("%Y-%m-%d, %H:%M:%S"))  # 标记时间
-
             new_workbook.save('test.xlsx')  # 保存工作簿
         except:
             log.write("修改状态失败")
@@ -218,6 +217,7 @@ class data:
     #         return type, content, phone
 
     # 获取类型文字  需要从第一行开始取
+    # 获取事件类型，大类，小类，返回值作为上传事件类中选择事件类型方法的入参
     def get_eventtype(self, i):
         global firsttype, secondtype
         # 打开excel
@@ -245,21 +245,19 @@ class data:
         id = worksheet.row_values(i)[0]
         log.write("事件id：{0}".format(id))
         try:
-            self.delete_picture()
-            url = details_url + id
+            self.delete_picture()  # 清空历史图片
+            url = details_url + id  # 拼接事件详情接口地址
             log.write(url)
             header = {"content-type": "application/x-www-form-urlencoded"}
             get_json = requests.get(url=url, headers=header)
-            message_json = json.loads(get_json.text)
-
-            # 下载事发时图片
-            shifa = message_json["data"]["emergency_fileList"]
-            shifacount = len(shifa)
+            message_json = json.loads(get_json.text)  # 爬取事件详情接口
+            shifa = message_json["data"]["emergency_fileList"]  # 获取事件详情中文件list
+            shifacount = len(shifa)  # 先获取list的长度，再依次判断每个list中是否存在图片地址
             log.write('事发时图片张数 ：{}'.format(shifacount))
             # 判断数组中是否包含图片地址
             for t in range(shifacount):
-                shifafiles = message_json["data"]["emergency_fileList"][t]["fileUrl"]
-                if shifafiles:
+                shifafiles = message_json["data"]["emergency_fileList"][t]["fileUrl"]  # 获取地址
+                if shifafiles:  # 存在图片地址，则拼接出图片完整地址
                     shifapath = fileurl + shifafiles
                     log.write("事发时图片地址：{0}".format(shifapath))
                     urllib.request.urlretrieve(shifapath, dir1 + '\\{0}.jpeg'.format(t))  # 下载图片到指定路径 dir
@@ -289,22 +287,20 @@ class data:
 
     # 清空图片
     def delete_picture(self):
-        # 指定路径
-
+        # 分别清空两个图片文件加
         for root, dirs, files in os.walk(dir1):
             for name in files:
-                if name.endswith(".jpeg"):  # 填写规则
+                if name.endswith(".jpeg"):  # 清空以jpeg结尾的文件
                     os.remove(os.path.join(root, name))
                     print("Delete File: " + os.path.join(root, name))
 
         for root, dirs, files in os.walk(dir2):
             for name in files:
-                if name.endswith(".jpeg"):  # 填写规则
+                if name.endswith(".jpeg"):  # 清空以jpeg结尾的文件
                     os.remove(os.path.join(root, name))
                     print("Delete File: " + os.path.join(root, name))
 
-        # 类型转code
-
+    # 类型转code 将智慧网格中的事件类型转换为平安山西的事件类型
     def type_to_code(self, i):
         global fircode, seccode
         eventtype = self.get_eventtype(i)
